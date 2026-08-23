@@ -2582,6 +2582,52 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
   site). Não é mais um link único — agora há 3 pontos de WhatsApp no
   site (CTA final + os 2 botões de nav), não só 1 como registrado antes.
 
+- **Heading de "Soluções" em 2 linhas (2026-08-22)** — usuário pediu, com
+  print, que o headline da sessão ("Veja por dentro: tudo que a sua
+  operação precisa, sem inchaço.") ficasse em só 2 linhas (estava
+  quebrando em 3). `.feature-showcase__header-heading` tinha
+  `max-width: 32rem` — largo o bastante pra não colidir com o parágrafo
+  à direita (mesmo layout horizontal documentado em "Header horizontal"),
+  mas estreito demais pro texto caber em 2 linhas. Medido via Playwright
+  testando vários valores: **36rem** é o menor que garante 2 linhas
+  balanceadas (557px/570px) sem encostar no parágrafo, confirmado em
+  1440px e 1920px. **Em larguras "tweener" (~991–1344px, incluindo
+  1280px cravado) ainda cai pra 3 linhas** — mesmo padrão de degradação
+  do `text-wrap: balance` já aceito no projeto pro heading da hero (não é
+  bug, é o algoritmo de balanceamento reagindo a menos espaço
+  disponível); não foi pedido cobrir esse meio-termo especificamente.
+  Nenhuma regressão nova: confirmado sem overlap/quebra em 991px, 767px e
+  390px (fallback empilhado), e sem overflow horizontal novo (o overflow
+  que aparece em 1100px/390px é pré-existente, vem do
+  `.testimonials__track`, sem relação com essa mudança).
+
+- **Bug real corrigido: hover de `.btn--on-dark` quase invisível
+  (2026-08-22)**. Usuário mandou print do botão "Começar meu teste grátis
+  agora" (CTA final) no hover, mostrando fundo escuro/borrado e texto
+  ilegível, pedindo pra "deixar mais escuro" e "melhorar a leitura da
+  fonte". Causa raiz: `.btn--on-dark:hover` usava `background:
+  var(--brand-10)` — um roxo com só 10% de opacidade — mas esse botão
+  SEMPRE fica sobre fundo escuro (`.about-outcomes__cta` e o CTA final
+  `.full-width-feature`), então o fundo quase-transparente deixava o
+  escuro da seção por trás dominar, com o texto (`color: var(--color-ink)`,
+  escuro) quase invisível sobre um fundo também escuro — não é só "pouco
+  contraste", é literalmente escuro-sobre-escuro. Corrigido pra
+  `background: color-mix(in srgb, var(--color-ink) 12%, white)` — opaco,
+  um tom só um pouco mais escuro que o branco base, mantendo o texto
+  escuro com contraste bem acima do mínimo (medido via Playwright: 19.7:1
+  no CTA final, 15.1:1 em `.about-outcomes__cta`, ambos WCAG AAA
+  folgados). Não depende mais de transparência sobre fundo variável.
+- **Subheadline do CTA final reduzido de 4 pra 3 linhas (2026-08-22)** —
+  mesmo pedido do usuário, mesma sessão. `.full-width-feature__paragraph`
+  tinha `max-width: 56ch`; texto não podia mudar (pedido explícito). Medido
+  via Playwright testando vários valores: **62ch** é o menor que garante 3
+  linhas bem balanceadas (~530-560px cada linha, ~5% de diferença) — todo
+  valor maior testado (66/70/74/78/82ch) rendeu EXATAMENTE igual, já que
+  `text-wrap: balance` sempre acha a largura mínima que ainda cabe no
+  número de linhas possível; não há motivo pra usar um valor maior que o
+  mínimo. Card tem espaço de sobra (~1150px disponíveis dentro do
+  padding), sem risco de estourar em nenhuma largura de desktop comum.
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das

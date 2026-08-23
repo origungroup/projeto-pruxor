@@ -188,7 +188,15 @@ svg { display: block; }
 .btn--tertiary { background: var(--ink-5); color: var(--text-secondary); }
 .btn--tertiary:hover { background: var(--ink-10); color: var(--text-primary); }
 .btn--on-dark { background: #fff; color: var(--color-ink); }
-.btn--on-dark:hover { background: var(--brand-10); }
+/* Bug real: usava `var(--brand-10)` (roxo com só 10% de opacidade) — sobre
+   o fundo escuro em que este botão sempre aparece (`.full-width-feature`),
+   isso deixava o botão quase transparente/apagado, revelando o fundo
+   escuro por trás e tornando o texto (`color: var(--color-ink)`, escuro)
+   praticamente ilegível (bug real, reportado com print). Trocado por um
+   tom opaco só um pouco mais escuro que o branco base — continua claro o
+   bastante pro texto escuro manter ótimo contraste, mas dá um feedback de
+   hover de verdade, sem depender de transparência sobre um fundo variável. */
+.btn--on-dark:hover { background: color-mix(in srgb, var(--color-ink) 12%, white); }
 .btn--outline-inverse { background: transparent; color: var(--text-inverse); border: 1px solid rgba(255, 255, 255, 0.35); }
 .btn--outline-inverse:hover { background: rgba(255, 255, 255, 0.1); }
 .btn svg { width: 1em; height: 1em; }
@@ -758,7 +766,15 @@ body.nav-mobile-open { overflow: hidden; }
   gap: var(--space-xl);
   margin-bottom: var(--space-m);
 }
-.feature-showcase__header-heading { max-width: 32rem; }
+/* 36rem (não mais 32rem, 2026-08-22): usuário pediu o heading em só 2
+   linhas (estava quebrando em 3 com o max-width antigo). 32rem era largo
+   o bastante pra não colidir com o parágrafo à direita, mas estreito
+   demais pro texto (~64 caracteres) caber em 2 linhas balanceadas — medi
+   via Playwright em 1440px/1920px: 36rem é o menor valor que já garante
+   2 linhas (557px/570px, bem equilibradas) sem encostar no parágrafo
+   (que mantém seu próprio max-width: 32rem, intocado). Testado sem
+   overlap em nenhuma das duas larguras. */
+.feature-showcase__header-heading { max-width: 36rem; }
 .feature-showcase__header-paragraph {
   max-width: 32rem;
   text-align: left;
@@ -1231,7 +1247,14 @@ body.nav-mobile-open { overflow: hidden; }
   z-index: 1;
 }
 .full-width-feature__heading { font-size: var(--text-2xl); font-weight: 500; max-width: 30ch; text-wrap: balance; }
-.full-width-feature__paragraph { color: rgba(247, 247, 255, 0.7); max-width: 56ch; text-wrap: balance; }
+/* max-width 62ch (não mais 56ch, 2026-08-22): usuário pediu o parágrafo em
+   3 linhas em vez de 4, sem mudar o texto — medido via Playwright, 62ch é
+   o menor valor que garante 3 linhas bem balanceadas (~530-560px cada,
+   ~5% de diferença entre elas); qualquer valor maior renderiza idêntico,
+   já que `text-wrap: balance` sempre busca a largura mínima que ainda
+   cabe em 3 linhas. Card tem espaço de sobra (~1150px disponíveis), sem
+   risco de estourar. */
+.full-width-feature__paragraph { color: rgba(247, 247, 255, 0.7); max-width: 62ch; text-wrap: balance; }
 .full-width-feature__cta-group { display: flex; flex-direction: column; align-items: center; gap: var(--space-2xs); }
 .full-width-feature__microcopy { font-family: var(--font-secondary); font-size: var(--text-2xs); color: rgba(247, 247, 255, 0.6); }
 .full-width-feature__secondary-cta { font-family: var(--font-secondary); font-size: var(--text-sm); color: rgba(247, 247, 255, 0.75); text-decoration: underline; text-underline-offset: 3px; }
