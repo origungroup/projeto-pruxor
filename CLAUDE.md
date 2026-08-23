@@ -1,0 +1,949 @@
+# CLAUDE.md
+
+## Projeto
+
+Landing page para a **Pruxor**, sistema de gestão e acompanhamento de obras
+e projetos (engenharia, arquitetura, construção). O site nasceu como um
+clone estrutural/visual de outro site de referência — objetivo é converter
+visitantes em demonstrações/testes gratuitos.
+
+**Fase atual (a partir de 2026-08-22): reconstrução com copy oficial,
+sessão a sessão.** O usuário recebeu a copy oficial da Pruxor e
+reconstruiu o site com ela aos poucos, uma seção por vez. **O site é uma
+landing page única — só `index.html`.** As páginas extras `sobre.html`,
+`solucoes.html` e `planos.html` (conteúdo inferido/aproximado de uma fase
+anterior, sem copy oficial) foram **apagadas do repositório em
+2026-08-22**, junto com todo CSS/JS que só elas usavam (ver "Limpeza pós-
+remoção das páginas extras" em `memoria.md` para a lista completa). Não
+recriar essas páginas nem os componentes removidos sem pedido explícito
+novo do usuário.
+
+## Tecnologias
+
+- HTML/CSS/JS puro (vanilla). Sem framework, sem bundler, sem build step,
+  sem dependências de npm no site em si.
+- Fontes via CDN: **General Sans** (Fontshare, headings/corpo) e **Inter**
+  (Google Fonts, UI/navegação/botões).
+- Sem bibliotecas de JS (sem jQuery, GSAP, AOS etc.) — todos os efeitos são
+  vanilla (`IntersectionObserver`, `requestAnimationFrame`, `position:
+  sticky`, CSS custom properties).
+
+## Estrutura
+
+```
+index.html      → a página inteira (única rota do site)
+css/style.css   → design tokens (:root) + estilo de todos os componentes
+js/main.js      → funções de init, todas chamadas em DOMContentLoaded
+README.md       → detalhes técnicos mais extensos (licenças, decisões)
+```
+
+Não criar novas páginas/rotas sem pedido explícito do usuário — o site é
+página única de propósito.
+
+Não há pasta `assets/` em uso — todo ícone é SVG inline no HTML, não há
+imagens reais no site. A hero não tem mais card visual/mockup do lado
+direito — foi removido de propósito (ver bullet da hero em "Design e
+experiência"); não reintroduzir uma imagem ou placeholder ali sem pedido
+explícito.
+
+## Regras do projeto
+
+- **Página única de verdade.** Navegação principal (`.nav__list` e
+  `.nav__list--mobile`) é 100% âncora dentro do próprio `index.html`:
+  Sobre (`#sobre`) → Soluções (`#solucoes`) → Planos (`#planos`) → FAQ
+  (`#faq`). A ordem dos itens-âncora segue a ordem das seções no
+  `index.html` — reordene a navbar (e o footer, que usa a mesma ordem)
+  sempre que reordenar seções. Não criar novas rotas/páginas sem pedido
+  explícito do usuário — o site nunca deve voltar a ter mais de um
+  arquivo HTML sem um motivo novo e explícito.
+- **Ordem das seções no index (copy oficial, 2026-08-22): Hero → Sobre
+  (prova social) → Problema → Soluções (5 módulos) → Como funciona →
+  Planilha vs Pruxor → Diferenciais (comerciais) → Depoimentos → Planos →
+  FAQ → CTA final (`.full-width-feature`).** "Sobre" (agora com stats de
+  prova social) foi movida pra logo abaixo da hero por pedido explícito
+  do usuário — antes ficava entre Soluções e Integrações (seção removida,
+  ver abaixo). "Problema" continua seguido direto por "Soluções"
+  (`id="solucoes"`) de propósito, pro visitante entender o problema e já
+  ver a solução em seguida — não mexer nessa adjacência sem pedido
+  explícito. "Como funciona", "Planilha vs Pruxor", "Diferenciais"
+  (comerciais, `.value-props`) e "Depoimentos" são sessões novas (não
+  existiam antes da copy oficial), cada uma logo abaixo da anterior por
+  pedido explícito do usuário — nenhuma tem `id`/âncora própria (nem toda
+  sessão precisa de item no nav). "Planos" ganhou `id="planos"` e o nav
+  passou a apontar pra âncora (`#planos`) quando a sessão de verdade
+  passou a existir em `index.html`. **Integrações ("Stack"), Segurança e
+  a "Diferenciais" antiga (5 cards sobre foco no setor/centralização/etc.)
+  foram REMOVIDAS do `index.html` por pedido explícito do usuário
+  (2026-08-22)** — eram as 3 seções com conteúdo placeholder/aproximado
+  que restavam do site antigo, sem copy oficial equivalente. Só existe
+  UMA sessão "Diferenciais" de fato desde então (a comercial,
+  `.value-props`). CSS específico (`.integrations__*`, `.security__*`,
+  `.security-card`) foi removido junto por não ter mais uso em nenhuma
+  página.
+- **Sem framework/bundler.** Manter vanilla HTML/CSS/JS — não introduzir
+  build step ou dependências no site em si sem alinhar antes.
+- **Tokens centralizados** em `:root` no `css/style.css` (cor de marca,
+  tipografia, espaçamento, raio de borda). Não hardcodear valores soltos;
+  usar as variáveis existentes (`--color-brand`, `--space-*`, `--text-*`,
+  `--radius-*`).
+- **Breakpoints padrão:** 991px (tablet), 767px e 479px (mobile). Seguir
+  os mesmos ao criar componentes responsivos novos.
+- **Padrão de tamanho de H1 no mobile (≤767px): `var(--text-2xl)`**
+  (2026-08-22, rodada de ajustes focada em mobile, pedido explícito do
+  usuário com print do hero) — hoje o único `<h1>` do site é
+  `.hero__heading`, que já tinha uma redução em ≤991px (`--text-3xl`,
+  usada também por tablet); a nova regra em ≤767px reduz mais um passo,
+  só na faixa mobile de verdade, sem mexer no tablet. Qualquer `<h1>`
+  novo que apareça no site deve seguir esse mesmo tamanho no mobile,
+  salvo pedido explícito em contrário.
+- Efeitos de scroll travado (`feature-showcase`, `how-it-works`) medem
+  dimensões dinamicamente via JS/CSS (`getBoundingClientRect`,
+  `position: sticky`) em vez de valores fixos — seguir esse padrão em
+  novos efeitos do tipo.
+- **Nunca combinar `data-reveal` (scroll-reveal genérico) com um elemento
+  que já tem opacidade controlada por classe própria** (ex: `.is-active`
+  de crossfade/stepping) — os dois sistemas competem pela mesma
+  propriedade `opacity` e já causaram um bug real (ver `memoria.md`).
+- **Cuidado ao definir `transform` em `:hover` de um elemento com
+  `data-reveal`**: `[data-reveal].is-visible` já define `transform`
+  (specificity 0,2,0) e, como vem depois no `style.css`, vence qualquer
+  regra `:hover` de especificidade igual (ex: `.card:hover`), fazendo o
+  efeito de hover parecer não funcionar mesmo com CSS correto — reforce a
+  especificidade (ex: `.card.card:hover`) sempre que animar `transform`
+  num elemento que também tem `data-reveal` (bug real, ver `memoria.md`).
+- Padrões de "scroll-hijack" (imagem/texto presos, cards deslizando)
+  ficam **desativados abaixo de 991px** — mobile sempre cai para layout
+  empilhado normal, sem travar o scroll.
+
+## Design e experiência
+
+- Marca: roxo `#514fee` (`--color-brand`), fundo quase branco
+  (`--bg-page`), texto quase preto (`--color-ink`).
+- Tipografia: General Sans para heading/corpo, Inter para UI/nav/botões.
+- **Hero** (`index.html`) foge do padrão claro do resto do site de
+  propósito: fundo em gradiente de 6 paradas, clareando o tempo todo sem
+  nenhum trecho parado na mesma cor (`--color-ink` no topo → `--color-brand`
+  → tons cada vez mais claros via `color-mix(in srgb, var(--color-brand) N%,
+  white)` → `--bg-page` no fim). Evite voltar a um "platô" de cor sólida
+  parada por um trecho longo — foi exatamente isso que criava uma transição
+  final brusca (feedback direto do usuário, comparando com o site de
+  referência). Tem também uma textura de grade sutil (`.hero__texture`) e
+  um holofote de pontinhos que segue o mouse (`.hero__spotlight` +
+  `initHeroSpotlight` em `js/main.js`). O holofote usa um filtro SVG
+  (`#hero-wave`, definido inline logo no `<body>` do `index.html`, com
+  `feTurbulence`+`feDisplacementMap` e uma `<animate>` SMIL) pra distorcer a
+  máscara com ruído animado — não é um círculo estático, ondula sozinho o
+  tempo todo. Efeito baseado no hero do site de referência original. Todo
+  texto dentro do hero usa cor clara (`--text-inverse` ou
+  `rgba(255,255,255,…)`), não os tokens de texto padrão do site (que são
+  escuros, pensados pra fundo claro) — **exceto `.hero__microcopy`**
+  ("15 dias de acesso completo..."), que usa `color: var(--color-brand)`
+  desde 2026-08-22 (pedido explícito do usuário: deixar esse texto "na
+  cor primária", lido como a cor de marca — mesma cor de `.btn--primary`/
+  badge "Mais popular" — não o token `--text-primary`, que é escuro e
+  pensado pra fundo claro, ilegível aqui). Mantém o `text-shadow` escuro
+  já existente (ajuda o brand-color roxo a não se perder contra o trecho
+  do degradê que também é roxo, na posição vertical onde a microcopy
+  cai). Ao ajustar as paradas do gradiente,
+  ajuste junto os `mask-image` de `.hero__texture`/`.hero__spotlight`
+  (mesmos pontos percentuais), senão eles ficam visíveis por cima da faixa
+  branca em vez de sumir nela. `.hero` tem `margin-top: calc(-1 *
+  var(--nav-height))` (compensado no `padding-top`) de propósito — ela
+  "sobe" por baixo do header pra a navbar transparente do topo ter o
+  degradê escuro pra revelar (ver bullet da navbar abaixo); se remover essa
+  sobreposição, o texto claro do menu perde o contraste. **No mobile
+  (≤767px), `padding-top`/`padding-bottom` da `.hero` reduzem de
+  `--space-2xl` (96px) pra `--space-l` (48px)** — mantendo o `+
+  var(--nav-height)` no topo (ainda precisa compensar a sobreposição da
+  navbar, não pode sumir) — pedido explícito do usuário (com prints, hero
+  atual vs. referência) pra "balancear" o hero no mobile: com o padding
+  de desktop (96px/96px), sobrava um respiro desproporcional antes do
+  eyebrow e depois da microcopy, deixando o conteúdo "flutuando" numa
+  faixa curta no meio de uma faixa alta de gradiente vazio. A referência
+  usada (hero da Clarasight) tem o heading bem mais colado no header;
+  aqui não dá pra copiar isso 1:1 porque a hero não tem o gráfico
+  (globo pontilhado) que na referência preenche o espaço abaixo do CTA —
+  reduzir o padding em vez de adicionar um elemento novo foi a forma de
+  "balancear" sem contradizer a decisão já tomada de manter a hero só com
+  a coluna de texto (ver bullet do card visual removido). Conteúdo da hero
+  é só a coluna de texto (`.hero__content`), centralizada, sem card
+  visual/mockup ao lado — foi removido de propósito (pedido do usuário) e
+  não deve voltar sem pedido explícito. **`.hero__content` tem
+  `max-width: 60rem`** (2026-08-22, antes 46rem) — aumentado
+  especificamente pra dar espaço ao H1 quebrar em 2 linhas em vez de 3
+  em telas de desktop comuns (pedido explícito do usuário, "versão
+  completa"/desktop, não mobile). Como `.hero__paragraph` antes herdava
+  a largura do pai sem `max-width` próprio, alargar `.hero__content`
+  também alargaria o parágrafo (linhas mais compridas, não pedido) — por
+  isso `.hero__paragraph` ganhou um `max-width: 46rem` PRÓPRIO (o valor
+  antigo do container), preservando exatamente a largura/quebra de linha
+  que já tinha antes; só o H1 usa a largura nova do container.
+  `text-wrap: balance` faz o resto: com 60rem disponíveis, "Saiba quanto
+  cada obra te dá de lucro antes de ela acabar." quebra em 2 linhas
+  balanceadas ao invés de 3 em larguras de desktop comuns (1280px+); abaixo
+  de ~1100px de viewport (ainda "desktop" pela convenção de breakpoint do
+  projeto, mas telas de laptop menores) o `balance` do navegador volta a
+  usar 3 linhas sozinho, já que 60rem não cabe mais — comportamento
+  esperado do algoritmo de balanceamento, não é bug, e não foi pedido
+  cobrir esse meio-termo especificamente. **Não usar esse mesmo max-width
+  aumentado como referência pra mobile** — lá o H1 já tem tratamento
+  próprio (ver bullet de tamanho de fonte mobile) e a largura real do
+  container mobile nunca chega perto de 60rem de qualquer forma, então
+  não há conflito, mas são ajustes de fases diferentes (desktop vs.
+  mobile) e não devem ser confundidos.
+  `.hero__heading`/`.hero__paragraph`/`.hero__microcopy` têm `text-shadow`
+  escuro e sutil de propósito — o degradê da hero clareia continuamente
+  (sem platô), então dependendo de onde o texto cai na altura da hero
+  (varia com a proporção da viewport), o contraste do texto claro podia
+  ficar fraco contra um trecho já claro do degradê (feedback direto do
+  usuário, com print). A sombra garante leitura em qualquer altura, sem
+  precisar reabrir o ajuste do degradê em si — **qualquer texto novo
+  adicionado dentro do `.hero`, por menor/secundário que seja (ex: a
+  microcopy abaixo do CTA), precisa da mesma sombra**, já esquecida uma
+  vez (a microcopy nasceu sem sombra e ficou ilegível na faixa mais clara
+  do degradê, corrigido na hora). `.text-accent-inverse` dentro do
+  heading tem um override só ali pra ficar quase branco puro — mais claro
+  que a versão padrão dessa classe (usada também no CTA, sobre fundo
+  sólido, onde já tinha contraste OK); não mudar a classe global sem
+  reconferir os dois contextos.
+  - **Copy oficial (a partir de 2026-08-22)**: eyebrow (`.hero__eyebrow`,
+    reaproveita `badge badge--inverse` — mesmo padrão de rótulo em fundo
+    escuro já usado em "Sobre a Pruxor" na `.about-outcomes`), heading,
+    parágrafo e CTA vieram do briefing oficial do usuário — não são mais
+    texto inferido/aproximado. O antigo formulário de captura de e-mail
+    (`.demo-form`, nunca teve JS de verdade por trás, só CSS decorativo)
+    foi removido e substituído por um botão CTA simples
+    (`.hero__cta`, `<a>` linkando direto pra
+    `https://www.pruxor.com/login`) + `.hero__microcopy` (linha pequena
+    abaixo do botão). Não reintroduzir o formulário sem pedido explícito.
+- **Títulos longos usam `text-wrap: balance`** (`.hero__heading`,
+  `.section-header__heading`/`__paragraph`, `.card__heading`,
+  `.feature-set__heading`, `.full-width-feature__heading`/`__paragraph`)
+  pra evitar a última linha ficando com uma palavra órfã sozinha —
+  problema real já reportado pelo
+  usuário comparando com o site de referência. Qualquer heading/parágrafo
+  novo que possa quebrar em 2+ linhas (títulos de seção, headings de
+  card, CTAs) deve seguir o mesmo padrão.
+- **Navbar** (`.site-header`/`.site-header__bar`) muda de estado conforme
+  a página/scroll, via `initHeaderScrollState` em `js/main.js`: marca
+  `.has-hero` no `.site-header` se a página tem `.hero` (só o index) e
+  alterna `.is-scrolled` a partir de 24px de scroll. No topo do index
+  (`.has-hero:not(.is-scrolled)`), a barra fica bem transparente
+  (`rgba(255,255,255,0.14)` + blur) pra revelar o degradê da hero por trás,
+  com texto do menu em cor clara. Ao rolar (`.is-scrolled`, em qualquer
+  página), ela vira uma pílula flutuante: inset, `border-radius:
+  var(--radius-round)`, fundo opaco o bastante (`rgba(247,247,255,
+  0.88)`) pra continuar legível sobre qualquer conteúdo por trás — por
+  isso o texto volta a ser escuro nesse estado, sem depender do que está
+  atrás. Descolada do topo da viewport via `padding-top: var(--space-sm)`
+  em `.site-header.is-scrolled` (não `margin-top` em `.site-header__bar`)
+  — `.site-header__bar` é o primeiro filho de `.site-header`, que não tem
+  padding/borda própria, então uma margin-top no filho colapsa com a do
+  pai (margin collapsing) e, combinada com `position: sticky`, o respiro
+  simplesmente não aparece visualmente (já tentamos margin-top primeiro e
+  a pílula continuou grudada no topo). Padding no `.site-header` não
+  colapsa, então é a forma correta de dar esse respiro num elemento
+  sticky. Sombra também reduzida bem sutil (`0 4px 12px rgba(7,6,40,
+  0.05)`) — pedido explícito do usuário pra descolar do topo e
+  suavizar/remover a sombra. As regras de texto claro são **restritas a `.site-header__bar`**
+  (a barra desktop) e **excluem `body.nav-mobile-open`** de propósito: o
+  menu mobile (`.nav__list--mobile`) é um irmão fora da barra com fundo
+  sempre claro, e o overlay dele fica entre a barra e a hero quando aberto
+  — se o texto claro vazasse pra lá, ficaria ilegível (claro sobre claro).
+  Qualquer ajuste nessas regras deve manter esse escopo.
+- Efeitos já implementados: menu mobile em overlay full-screen, accordion
+  do FAQ, scroll-reveal (fade + blur) nas seções, feature showcase com
+  imagem+texto presos trocando por crossfade em etapas, "Como funciona"
+  com sidebar sticky ao lado de cards em fluxo normal, carrosséis em loop
+  contínuo CSS puro (Depoimentos), holofote de pontinhos no hero e nos
+  cards, globo 3D pontilhado girando e stats com contagem em
+  `.about-outcomes` (ver bullet próprio abaixo). **Não há mais marquee de
+  logos** — a seção existia entre a hero e "O problema" no `index.html` e
+  foi removida por pedido explícito do usuário (não recriar sem pedido
+  novo). **Não há mais announcement banner** — a faixa fixa no topo da
+  página ("Novidade: recurso X...") foi removida por completo (HTML, CSS
+  `.announcement-banner*`/`--banner-height`/`@keyframes pulse`, e o JS
+  `initAnnouncementBanner`) por pedido explícito do usuário (2026-08-22);
+  não recriar sem pedido novo.
+- Todo efeito de "prender a tela" tem fallback simples e empilhado no
+  mobile — nunca scroll-hijacking em telas pequenas.
+- **Smooth scroll customizado (wheel + inércia) foi tentado e
+  DESCARTADO** (2026-08-22, mesmo dia) — pedido, implementado, ajustado 2x
+  em resposta a feedback de "travamento" (ease maior, atribuição direta de
+  `scrollTop`, pausa do globo em canvas durante scroll ativo via um sinal
+  `isFastScrolling`/`markScrollActivity()`), mas o usuário seguiu achando
+  a experiência ruim mesmo depois dos ajustes e pediu explicitamente pra
+  reverter tudo: "Não gostei, continua muito travado... deixe como estava
+  antes de eu pedir a alteração". `initSmoothScroll` (função inteira),
+  `isFastScrolling`/`markScrollActivity`/`fastScrollTimer` (sinal
+  compartilhado) e a chamada em `DOMContentLoaded` foram REMOVIDOS por
+  completo — `initAboutGlobe.loop()` voltou a chamar `draw()`
+  incondicionalmente, sem checagem de scroll. **Rolagem normal (roda do
+  mouse/trackpad) está de volta a 100% nativa do navegador, sem nenhuma
+  interceptação de `wheel`.** `scroll-behavior: smooth` (CSS, `html`,
+  linha ~92 do `style.css`) continua intacto — isso só afeta saltos
+  programáticos (clique em âncora do menu), nunca foi tocado por essa
+  tentativa e não tem relação com o problema reportado. **Não reintroduzir
+  smooth scroll customizado sem pedido explícito novo do usuário** — a
+  hipótese mais provável (não confirmada) é que o dispositivo de teste já
+  tem inércia nativa boa (trackpad), e qualquer interceptação de `wheel`
+  SUBSTITUI essa curva nativa por uma pior em vez de complementá-la, então
+  simplesmente ajustar parâmetros (ease, throttling, pausar outras
+  animações) não resolve o problema de raiz — mudar de vez a técnica
+  (ex: só suavizar mouses de roda tradicionais, nunca trackpads) seria o
+  próximo passo válido, mas só vale a pena investigar se o usuário pedir
+  de novo.
+- Variantes "inverse" (`.badge--inverse`, `.btn--outline-inverse`,
+  `.text-accent-inverse`) existem porque as versões normais (com cor de
+  marca) somem contra fundo escuro/de marca — use-as sempre que reusar um
+  componente sobre `.full-width-feature`, `.compare` ou `.about-outcomes`
+  (fundo escuro).
+- Todo `.card` tem zoom + lift (`translateY(-6px) scale(1.045)`) + borda
+  acendendo (cor de marca) no `:hover`, sitewide — valores reforçados
+  numa 2ª rodada por pedido do usuário (a 1ª versão, só `scale(1.02)` sem
+  lift, foi considerada sutil demais). **`.card--vivid`** (modificador
+  usado em todas as fileiras de cards de destaque do `index.html` —
+  Problema, Diferenciais comerciais, Como funciona, Depoimentos; não
+  existe mais versão clara desses cards, foi padronizado) troca o cartão
+  claro por um
+  fundo escuro (`--color-ink`) com brilho radial na cor da marca, textura
+  de grade igual à da hero (mesma identidade visual), ícone
+  (`.card__icon`) e 2 sparkles decorativos (`.card__sparkle`, com leve
+  animação de piscar contínua). De propósito **não** copia as cores
+  arco-íris (azul/laranja/roxo/verde) do site de referência que inspirou
+  o pedido original; usa só a cor de marca única do produto, pra
+  "sintonizar" com o resto do site em vez de introduzir uma paleta nova.
+  - **Posição do brilho e atraso do ícone via `nth-child` cíclico**
+    (`:nth-child(4n+1)` etc. pro brilho, `:nth-child(5n+1)` etc. pro
+    atraso do ícone) — regra genérica em `.card--vivid` direto, sem
+    escopo por seção, pra qualquer fileira nova (2, 3, 4, 5, 6+ cards)
+    ganhar variedade automaticamente sem precisar de regras novas.
+  - **`.card__icon` anima o tempo todo** (não só no hover, pedido
+    explícito do usuário): flutua (`card-icon-float`) e pulsa um brilho
+    de marca ao redor (`card-icon-glow`).
+  - **`.card__spotlight`**: mesmo holofote de pontinhos que segue o
+    mouse da hero (mesma máscara radial + o filtro SVG `#hero-wave`
+    reaproveitado, já definido uma vez no `<body>` de cada página que
+    usa `.card--vivid`), só que por card em vez de por seção —
+    `initCardSpotlight` em `js/main.js`, mesmo padrão de
+    `initHeroSpotlight`. Pedido explícito do usuário: "no local que o
+    mouse passar, deve ter o mesmo efeito da hero".
+  - `.card--vivid.card--vivid:hover` (seletor duplicado, specificity
+    0,3,0) — sem esse reforço, o `.card.card:hover` genérico (também
+    0,3,0, reforçado antes por causa do conflito com `data-reveal`)
+    vencia e os cards escuros perdiam o brilho de marca no hover,
+    mostrando só a sombra cinza neutra do `.card` base (bug real, já
+    aconteceu).
+- **`.feature-showcase`** (seção "Soluções", `#solucoes`, "etapas presas"
+  — imagem+texto crossfadando por scroll, ver `initFeatureShowcase` em
+  `js/main.js`) tem, desde a copy oficial de 2026-08-22, um
+  `.feature-showcase__header` (eyebrow "Soluções" + heading + parágrafo)
+  **dentro** da área sticky (`.feature-showcase__stage`), preso junto com
+  o resto do conteúdo — sempre visível, independente de qual módulo está
+  ativo no crossfade. (1ª versão tinha um `.section-header` normal FORA
+  da área sticky, igual ao header de "Problema"; o usuário pediu, com
+  print, pra mover pra dentro e virar layout horizontal — ver bullet
+  "Header horizontal" mais abaixo.) Virou 5 etapas
+  (uma por módulo: financeiro, diário de obra, orçamento SINAPI, gestão
+  de obras, estoque), cada uma só com heading (`<h3>`, não mais `<h2>` —
+  agora tem um `<h2>` de verdade no `.section-header` acima) + parágrafo
+  (`.feature-set__paragraph`) + 1 CTA — não mais um heading + checklist
+  de 3 sub-itens por etapa (`.feature-set__list`/`__item-*`, removidos
+  por ficarem sem uso). **`initFeatureShowcase` conta `.feature-showcase__block`
+  no DOM automaticamente** (`steps = querySelectorAll(...).length`), então
+  ir de 2 pra 5 etapas não pediu nenhuma mudança de JS — só adicionar mais
+  blocos/painéis com `data-step` sequencial.
+  - **Placeholder com rótulo por módulo**: sem prints reais ainda,
+    `.feature-showcase__visual-panel` (desktop, crossfade) e
+    `.feature-showcase__block-visual` (mobile) mostram um rótulo de texto
+    (`.feature-showcase__visual-label`) dizendo qual tela vai entrar ali
+    ("Tela do financeiro" etc.) — sem isso, 5 caixas cinzas idênticas
+    ficariam indistinguíveis. Cada `data-step` tem uma variação sutil de
+    ângulo do mesmo gradiente de marca (`--brand-10` + `--bg-subtle`),
+    nunca uma cor nova.
+  - **Bug real evitado no fallback mobile**: a versão anterior (2 etapas)
+    já tinha uma imprecisão tolerável — mobile mostrava só a imagem da
+    etapa `is-active` (sempre a 1ª) acima de TODOS os blocos de texto
+    empilhados. Com 5 módulos bem distintos (telas diferentes de verdade,
+    não variações do mesmo tema), isso ficaria claramente errado — a
+    imagem do "financeiro" continuaria fixa no topo enquanto o texto
+    descia até "estoque". Corrigido escondendo
+    `.feature-showcase__visual-col` inteira no mobile e dando a cada
+    bloco sua PRÓPRIA miniatura (`.feature-showcase__block-visual`,
+    `display:none` no desktop) — imagem e texto sempre pareados certo,
+    qualquer que seja o número de módulos no futuro.
+  - **CTA único**: o botão secundário "Ver todas as soluções" (linkava
+    pra uma página `solucoes.html` que já não existe mais) foi removido —
+    a copy oficial só deu 1 CTA ("Testar tudo isso grátis por 15 dias" →
+    login).
+  - **Header horizontal + sessão inteira cabendo numa viewport só**
+    (pedido explícito do usuário, com print): `.feature-showcase__header`
+    é `display:flex; justify-content:space-between; align-items:
+    flex-end;` — heading à esquerda (`.feature-showcase__header-heading`),
+    parágrafo à direita (`.feature-showcase__header-paragraph`), nos dois
+    extremos, em vez de empilhados. **`align-items: flex-end`** (não
+    `flex-start`) por pedido explícito seguinte, com anotação visual: o
+    parágrafo alinha pela BASE com o heading, não pelo topo — os dois
+    terminam na mesma linha de base em vez de começarem juntos no topo.
+    `.feature-showcase__stage` virou `flex-direction: column`
+    (antes era row, só tinha o grid como filho; agora tem o header +
+    o grid empilhados) e perdeu o `min-height: 620px` fixo — travar uma
+    altura mínima alta empurraria o conteúdo pra fora da viewport em
+    telas mais baixas, o oposto do pedido. `.feature-showcase__visual-col`
+    também caiu de 460px pra 400px de `min-height` pra abrir espaço pro
+    header novo. Confirmado via `getBoundingClientRect` que a altura total
+    do stage (~659px) cabe dentro da viewport em alturas comuns de laptop
+    (768px) até desktop (1000px+), sem cortar nada. No mobile (≤991px), o
+    header volta a empilhar verticalmente (`flex-direction: column`) —
+    layout horizontal só faz sentido com largura de desktop.
+  - **`.feature-showcase__header-paragraph` tem `max-width: 32rem`**
+    (2026-08-22; antes 26rem, igual ao `__header-heading`) — pedido
+    explícito do usuário, com print anotado, dizendo que o parágrafo
+    "está colado na divisão do centro" e precisava "ir para o final".
+    Medido via `getBoundingClientRect` em várias larguras (995px a
+    1920px) ANTES do ajuste: o parágrafo já encostava exatamente na borda
+    direita real do container em 100% dos casos (`justify-content:
+    space-between` sempre empurra o último item flex até a borda,
+    independente da largura dele) — não era um bug de posicionamento.
+    O problema real era o VÃO vazio entre heading e parágrafo: com os
+    dois `max-width` fixos (32rem + 26rem) e o container crescendo até
+    1280px, sobrava um vão que ia de ~64px (perto do breakpoint de
+    tablet, 991px) até ~350px+ (telas grandes, 1920px+) — visualmente
+    dava a impressão de parágrafo "flutuando" longe da borda, mesmo
+    estando tecnicamente nela. Igualar o `max-width` do parágrafo ao do
+    heading (32rem) reduz esse vão em todas as larguras (ex: ~64px fixo
+    até ~1280px, ~224-256px em telas maiores) sem mudar a lógica de
+    `space-between` nem a borda direita real (que continua idêntica).
+    **Usuário chegou a pedir uma versão com `flex: 1` no parágrafo (vão
+    fixo em 64px em qualquer largura), mas pediu pra desfazer e voltar
+    pra este estado (`max-width: 32rem` nos dois, `space-between`) logo
+    em seguida — ver `memoria.md` pra esse histórico.** Se quiser
+    reabrir essa opção depois, a mudança seria: `.feature-showcase__header-paragraph`
+    sem `max-width` + `flex: 1`, `.feature-showcase__header-heading` com
+    `flex: none`, `.feature-showcase__header` com
+    `justify-content: flex-start`.
+- **"Como funciona"** (sessão nova, logo depois de "Soluções") passou por
+  **3 layouts diferentes** antes de chegar no atual. 1ª versão: linha do
+  tempo horizontal estática (`.how-it-works__timeline`, círculos com
+  ícone+número ligados por traço tracejado, sem scroll travado). 2ª
+  versão: heading fixo à esquerda + card `.card--vivid` CROSSFADANDO
+  entre as 3 etapas à direita, mesma mecânica de "etapas presas" (scroll
+  travado) de "Soluções" — **essa versão nunca bateu com o efeito que o
+  usuário queria**: ele voltou com um print (zoom no GIF de referência)
+  mostrando os 3 cards em fluxo normal, um visivelmente abaixo do outro
+  com gap, e disse "os próximos devem vir aparecendo... como uma linha
+  do tempo, não substituindo pelo próximo, deve vir de baixo para cima."
+  Isso é literalmente scroll normal, não crossfade. **3ª versão (atual,
+  2026-08-22)**: removido TODO mecanismo de scroll customizado —
+  `.how-it-works__track`/`__stage`/`__grid`/`.is-active`/`.is-past` e a
+  função `initHowItWorks()` saíram por completo (CSS/JS confirmados sem
+  uso antes de apagar). Layout final é só CSS puro: `.how-it-works__intro`
+  (eyebrow + heading + CTA) usa `position: sticky; top: var(--nav-height);`
+  — mesmo `top` de qualquer outro elemento sticky do site
+  (`.feature-showcase__stage`) — enquanto
+  `.how-it-works__card-col` é um `flex-direction: column` normal com os 3
+  `.card--vivid` em fluxo de documento comum (sem `position:absolute`,
+  sem JS). Como a coluna dos cards é mais alta que a do heading, o
+  heading fica "parado" enquanto os cards passam por trás dele — o
+  padrão clássico de "sidebar sticky ao lado de lista mais alta", sem
+  nenhuma linha de JS.
+  - **Cada card ganhou um `.how-it-works__card-top`** (flex row: ícone à
+    esquerda, tag "Etapa N" à direita, nos dois extremos) — layout do
+    topo do card pedido com base no print de referência. A tag reaproveita
+    `.badge.badge--inverse` (mesmo componente de rótulos sobre fundo
+    escuro, ex: eyebrow do hero) com o ícone sparkle de 4 pontas já usado
+    em `.card__sparkle`, como conteúdo real do rótulo em vez de decoração
+    solta.
+  - **Parágrafo limitado a 2 linhas** (pedido explícito): `.how-it-works__card
+    .card__paragraph` usa `-webkit-line-clamp: 2` (+ `display:-webkit-box;
+    -webkit-box-orient:vertical; overflow:hidden`) — escopado só a essa
+    sessão, já que `.card__paragraph` é reaproveitado em várias outras
+    (Problema, Diferenciais, Depoimentos) sem esse limite. Os 3 parágrafos
+    da copy oficial já cabem em ~1.5-2 linhas na maioria dos casos; o mais
+    longo (etapa 3) trunca com reticências no desktop — não reescrevi a
+    copy pra evitar isso, já que não foi pedido encurtar texto, só limitar
+    a altura visual.
+  - **`initFeatureShowcase` chegou a virar uma função genérica
+    (`initStickyStepShowcase`) durante a 2ª versão**, pra servir "Soluções"
+    e "Como funciona" ao mesmo tempo — revertido de volta pra uma função
+    específica só de "Soluções" quando "Como funciona" trocou de mecânica
+    de vez (a abstração não fazia mais sentido servindo 1 usuário só).
+  - **Mobile (≤991px)**: `.how-it-works__layout` vira 1 coluna,
+    `.how-it-works__intro` perde o `position: sticky` (`static`) — não
+    faz sentido "grudar" um heading acima de uma lista que já está
+    empilhada logo abaixo dele.
+  - **Cada card ganhou uma tag "Etapa N"** (pedido explícito, com base no
+    GIF de referência) — reaproveita `.badge.badge--inverse` (mesmo
+    componente já usado em rótulos sobre fundo escuro, ex: eyebrow do
+    hero) com o mesmo ícone sparkle de 4 pontas já usado em
+    `.card__sparkle`, só que como conteúdo real do rótulo em vez de
+    decoração solta. Ícones dos 3 cards são os MESMOS da 1ª versão
+    (pessoa, checklist, foguete/chama) — só a moldura ao redor mudou (de
+    círculo claro pra `.card__icon` escuro).
+  - **Mobile (≤991px)**: mesmo tratamento de "Soluções" — trilho vira
+    `height: auto`, stage vira `static`, os 3 cards saem do
+    `position:absolute` (viram `static`, `opacity:1` forçado) e empilham
+    normalmente em coluna, sem scroll travado (`.how-it-works__grid` vira
+    `grid-template-columns: 1fr`). `.how-it-works__intro` perde o
+    `max-width` fixo nesse breakpoint.
+- **`.compare`** (sessão "Planilha vs Pruxor", logo abaixo de "Como
+  funciona") — card escuro reaproveitando a MESMA identidade visual do
+  `.about-outcomes`/`.card--vivid` (`--color-ink`, textura de grade),
+  nunca a cor verde do print de referência que inspirou o layout. Header
+  (`.compare__header`: "Na planilha" / círculo "VS" / `.nav__logo-mark` +
+  "Pruxor") e cada `.compare__row` usam o MESMO
+  `grid-template-columns: 1fr 48px 1.15fr`, pra a coluna do meio (badge
+  VS / traço divisor) ficar alinhada entre header e linhas.
+  - **Textura diagonal só na metade "antes"** (`.compare__cell--before`):
+    `repeating-linear-gradient(-45deg, ...)` bem sutil, imitando o
+    hachurado do print de referência — só nessa célula, não na
+    `.compare__cell--after` (que fica "limpa", com o ícone de raio na cor
+    de marca — não a cor do print).
+  - **Traço divisor vertical** (`.compare__divider`, 2px, cor de marca,
+    `align-self: stretch`) entre as duas metades de cada linha — some no
+    mobile (`display: none`), onde as duas metades empilham e ganham uma
+    borda horizontal no lugar.
+  - Reusa `.nav__logo-mark` (o quadradinho roxo da navbar) como "logo" da
+    Pruxor no header, em vez de desenhar um ícone novo — mesmo elemento,
+    mesmo estilo, menos uma coisa pra manter consistente.
+  - **Labels do header centralizados** (2026-08-22, pedido explícito com
+    print): `.compare__header-label` ganhou `text-align: center` e
+    `.compare__header-label--brand` ganhou `justify-content: center` —
+    antes "Na planilha" e "Pruxor" ficavam grudados nas bordas internas
+    (perto do "VS"), já que nenhum dos dois tinha alinhamento próprio
+    dentro da coluna `1fr`/`1.15fr` do grid.
+  - **Brilho radial na cor de marca** (2026-08-22, "adicionar o mesmo
+    gradiente dos cards"): `.compare::before` replica exatamente a
+    receita do `.card--vivid::before` (`radial-gradient(circle at 20% 0%,
+    color-mix(in srgb, var(--color-brand) 65%, transparent) 0%,
+    transparent 62%)`, opacidade 0.85) — posição FIXA (não
+    `var(--glow-x)`/`--glow-y` com ciclo por `nth-child` como em
+    `.card--vivid`), já que aqui é uma instância única, não uma fileira
+    de cards precisando de variedade.
+  - **Holofote de pontinhos no mouse** (2026-08-22, mesmo pedido do
+    brilho): reaproveita o `.card__spotlight` já existente (mesma máscara
+    radial + filtro SVG `#hero-wave`) em vez de criar um elemento/efeito
+    novo — `initCardSpotlight` (js/main.js) teve a busca ampliada de
+    `.card--vivid` pra `.card--vivid, .compare`, e as regras de CSS que
+    dependiam do ancestral ser `.card--vivid` (`z-index` do spotlight,
+    ativação de opacidade via `.is-spotlight-active`) ganharam `.compare`
+    como alternativa no seletor. **Não é preciso** adicionar a classe
+    `.card--vivid` em si no `.compare` — só o elemento `.card__spotlight`
+    + as 2 regras de CSS estendidas bastam; misturar a classe inteira
+    traria de brinde o lift/scale de hover e as regras de tipografia de
+    `.card__heading`/`.card__paragraph`, que não fazem sentido aqui.
+  - **CTA final (`.compare__closing`) alinhado com o "VS", não com o
+    centro geométrico do card** (2026-08-22, pedido explícito com print,
+    "observando a linha do meio que divide a planilha com o botão") — o
+    grid `1fr 48px 1.15fr` do header/linhas é assimétrico DE PROPÓSITO
+    (coluna da direita um pouco maior, ver bullet acima), então o centro
+    real do "VS" fica deslocado do centro geométrico do `.compare`; um
+    `text-align: center` simples no botão (jeito antigo) centralizava no
+    card inteiro, não no "VS" — ficava visualmente "puxado" pra direita
+    em relação à linha divisória. **Fix sem calcular o deslocamento na
+    mão**: `.compare__closing-grid` reusa o MESMO
+    `grid-template-columns: 1fr 48px 1.15fr` + o MESMO `padding`
+    horizontal do `.compare` (`var(--space-xl)`) — só assim o grid dos
+    dois lugares compartilha a mesma matemática de largura. O botão
+    (`.compare__closing-btn`) fica no `grid-column: 2` (a coluna de 48px
+    do "VS") com `justify-self: center`: mesmo sendo bem mais largo que
+    48px, o navegador centraliza o item em torno do CENTRO daquela
+    coluna, deixando-o "vazar" simetricamente pros dois lados — resultado
+    pixel-perfeito (`getBoundingClientRect` confirmou diferença de
+    0.01px entre o centro do "VS" e o centro do botão em 1280/1440/1920px)
+    sem depender de nenhum valor mágico, e continua correto se a
+    proporção do grid ou o texto do botão mudar no futuro. No mobile
+    (≤767px), onde o "VS"/divisão em 2 colunas somem (tudo empilha), o
+    grid do closing também colapsa pra 1 coluna simples — não sobra
+    nenhuma assimetria pra compensar nesse breakpoint.
+- **`.value-props`** (sessão "Diferenciais" comercial, logo abaixo de
+  "Planilha vs Pruxor") segue o mesmo padrão de "Problema": `.section-header`
+  (com `margin-bottom` desde a implementação inicial, aplicando a lição
+  registrada acima) + grid de 4 `.card--vivid` (mesmo spotlight/sparkles/
+  hover/ícone animado, zero CSS de card novo). Classes do grid próprias
+  (`.value-props__cards`, não `.problem__cards`) só pra não misturar
+  semanticamente com a sessão "Problema", mesmo a receita de CSS sendo
+  idêntica (`repeat(4, 1fr)` → 2 colunas em 991px → 1 coluna em 479px,
+  igual). Ícones novos (cadeado aberto, relógio, camadas, capacete) —
+  nenhum specificado no briefing, escolhidos pra combinar com cada
+  headline (fidelidade, teste, planos, feito-pra-obra).
+- **`.testimonials`** (sessão "Depoimentos", logo abaixo de "Diferenciais"
+  comercial) é um **carrossel em loop contínuo, CSS puro, sem JS** — a
+  lista de 5 depoimentos (`.testimonial-card`, variante de `.card--vivid`)
+  é duplicada uma vez no HTML (2ª cópia com `aria-hidden="true"`, não deve
+  ser lida 2x por leitor de tela) dentro de `.testimonials__track`, que
+  anima `transform: translateX(0 → -50%)` infinitamente — 50% é
+  exatamente a largura de UMA cópia (as duas são idênticas), dando loop
+  sem salto perceptível sem precisar calcular nada em JS, da direita pra
+  esquerda (pedido explícito). Pausa no hover (`animation-play-state:
+  paused`) — texto de depoimento é mais longo que um rótulo de badge, dar
+  tempo de terminar de ler é esperado, não só um extra. Respeita
+  `prefers-reduced-motion` (mesma disciplina de globo/count-up/sparkles/
+  ícones). Fade nas bordas via `mask-image`, dentro do `.layout-container`
+  normal — **não é full-bleed** (não estica além da largura de conteúdo
+  do site). `overflow-x: hidden; overflow-y: visible;` (não o shorthand
+  `overflow: hidden`) + `padding: 50px 0 75px` (ver regra geral em
+  "Cuidados importantes" sobre containers com `overflow: hidden` que
+  contêm `.card--vivid`): sem isso, o lift/scale/brilho do hover do
+  `.card--vivid` fica cortado em cima e embaixo pelo `overflow: hidden`
+  do container do loop (bug real, reportado com print).
+  - **Sem foto real de pessoa** — o site é 100% vanilla/SVG, sem nenhum
+    asset de imagem introduzido ainda (ver "Estrutura" no topo deste
+    arquivo). Em vez de uma foto realista, `.testimonial-card__avatar` é
+    um círculo com iniciais, cor variando por `nth-child` (mistura da
+    cor de marca única do produto, nunca uma paleta nova — mesma
+    disciplina do `.card--vivid`). Se o usuário pedir fotos de verdade
+    depois, aí sim vale considerar o primeiro asset de imagem real do
+    projeto (mudança de precedente, não decidir sozinho).
+  - **Nome, profissão-com-cidade dos 5 depoimentos são fictícios** — o
+    briefing oficial deu o texto do depoimento e a profissão, mas marcou
+    `[Nome]`/`[Cidade]` como parâmetro pra preencher; nomes/cidades
+    brasileiros variados foram inventados pra esse fim, não são clientes
+    reais.
+- **`.about-outcomes`** (seção "Sobre", `#sobre` em `index.html` — **logo
+  abaixo da hero, primeira seção da página** desde a copy oficial de
+  2026-08-22; antes ficava entre Soluções e Integrações) é um card escuro
+  (`--color-ink`, mesma textura de grade da hero/`.card--vivid` — reusa a
+  identidade visual existente em vez de inventar paleta nova) com badge +
+  heading + parágrafo + CTA + stats à esquerda e um globo 3D pontilhado
+  grande sangrando pela direita, layout baseado num print de referência
+  (estilo Clarasight). Substituiu o antigo `.why-different`/`.stat-panel`
+  (fundo claro, grid 2x2) por completo. **Funciona como prova social**
+  (pedido explícito do usuário): 3 stats reais da copy oficial (não mais
+  4) — "2.000+ Obras acompanhadas", "500+ Construtores e empresas
+  atendidos", "95% Satisfação dos clientes". CTA (`.about-outcomes__cta`)
+  é `<a href="https://www.pruxor.com/login">Começar meu teste grátis</a>`
+  — mesmo padrão/link do CTA da hero.
+  - **Globo pontilhado**: `initAboutGlobe` em `js/main.js`, Canvas 2D puro
+    (projeto é vanilla, sem three.js/globe.gl) — continentes como polígonos
+    simplificados de lat/lon, pontos via amostragem "Fibonacci sphere"
+    (distribuição quase-uniforme numa esfera), cada um testado contra os
+    polígonos (ray-casting) pra diferenciar terra/oceano. Projeção
+    ortográfica (só desenha o hemisfério voltado pra "câmera"), gira
+    sozinho via `requestAnimationFrame` incrementando a longitude a cada
+    frame. `IntersectionObserver` pausa a animação quando o canvas sai da
+    tela; `prefers-reduced-motion` trava a rotação e desenha só um frame
+    estático. Tem um anel/rim sutil (`stroke`) em volta — sem ele os
+    pontos pareciam um blob solto, sem contorno de esfera.
+  - **Quantidade de pontos é adaptativa ao tamanho renderizado, não uma
+    constante fixa** — `generatePoints(count)` é chamada dentro de
+    `resize()`, com `count` calculado a partir da área do círculo
+    (`radius²`) contra uma densidade-base (`MAX_POINT_COUNT = 18000` perto
+    do raio do globo grande de desktop, `BASE_RADIUS ≈ 480px`; regenera só
+    quando o alvo muda mais de 10% do atual). **Não trocar por uma
+    constante fixa de novo**: já aconteceu (pedido do usuário de aumentar
+    "muito" a quantidade de pontos, testado primeiro com uma constante
+    única de 18000) — no globo grande de desktop ficava ótimo, mas no
+    fallback empilhado (`≤991px`, ~320px de diâmetro) e no mobile os
+    MESMOS 18000 pontos ficavam tão apertados que se fundiam numa mancha
+    branca sólida, destruindo o estilo pontilhado nesses tamanhos (bug
+    real, achado ao revisar o screenshot do fallback antes de dar por
+    concluído). A versão adaptativa resolve isso mantendo a MESMA
+    densidade (pontos por px²) em qualquer tamanho de globo.
+  - **Opacidade dos pontos**: terra em `0.6 * (0.55+0.45*depth)` no ponto
+    mais próximo da "câmera", oceano em `0.28 * ...` — subiu numa rodada
+    ("aumente a opacidade") e desceu de volta na rodada seguinte
+    ("diminua a opacidade") pra um meio-termo. Aro/`stroke` do contorno em
+    `rgba(247,247,255,0.16)`. O globo existe só na sessão `.about-outcomes`
+    do `index.html` — não há mais nenhuma outra página no site.
+  - **`.about-outcomes__globe` mostra só 1/4 do globo em desktop**, ancorado
+    no canto inferior-direito do card: `right: 0; bottom: 0; transform:
+    translate(50%, 50%)` (não `top:50%`/`translateY` como numa 1ª versão
+    que mostrava o círculo quase inteiro). Como `%` em `transform` é
+    relativo ao próprio tamanho do elemento (não do container), esse combo
+    centra o globo exatamente no canto **independente da proporção
+    largura/altura do card** — usar `right`/`bottom` em % puros pra isso
+    não funcionaria (são relativos a dimensões diferentes do container:
+    largura vs. altura). Com o centro no canto e `overflow: hidden` no
+    `.about-outcomes` recortando, sobra matematicamente 1/4 do círculo.
+    Pedido explícito do usuário, comparando com print de referência (globo
+    bem maior que a 1ª versão, só um quadrante visível). **Só em
+    desktop/tablet largo** — no fallback empilhado (≤991px) o globo volta
+    a ser um círculo inteiro centralizado abaixo do texto (`transform:
+    none`), decisão própria de não estender o corte de 1/4 pro estado
+    empilhado, onde não há canto de card pra "sangrar".
+  - **Stats com contagem**: `initCountUp` em `js/main.js`,
+    `IntersectionObserver` (dispara uma vez, threshold 0.4) +
+    `requestAnimationFrame` com easing ease-out cúbico (1.6s). Usa
+    `toLocaleString('pt-BR')` pra formatar milhar com ponto ("1.000+")
+    automaticamente. `prefers-reduced-motion` pula direto pro valor final.
+  - **Breakpoint "tweener" em 1240px** (`.about-outcomes__content` reduz
+    `max-width`, `.about-outcomes__globe` reduz `width`) — sem ele o
+    heading (que só quebra linha via `text-wrap: balance` quando precisa)
+    cabe numa linha só bem perto da largura do globo e passa por cima
+    dele em larguras entre o desktop cheio e o empilhamento de 991px.
+  - **`.about-outcomes__stats` empilha em coluna única abaixo de 767px**
+    (`flex-direction: column`) — a regra base é `nowrap` em linha (stats
+    lado a lado, como no print), mas nowrap sozinho estoura a largura da
+    tela inteira em qualquer viewport mobile (confirmado: overflow
+    horizontal na página toda entre 320px e ~560px, bug real já achado e
+    corrigido). Era um grid 2x2 (`flex: 0 0 calc(50%...)`) quando a seção
+    tinha 4 stats; virou coluna única quando a copy oficial reduziu pra 3
+    (2x2 deixaria o 3º item sozinho, desalinhado) — a coluna funciona pra
+    qualquer quantidade de stats, então é a opção mais robusta a mudanças
+    futuras de copy. **Não voltar pra nowrap sem testar a faixa mobile
+    inteira de novo** (não só o breakpoint onde a mudança foi pensada).
+- **`.pricing-card`/`.pricing-grid`/`.billing-toggle`** compõem a sessão
+  "Planos" do `index.html` (copy oficial, 2026-08-22 — 1 grupo, 4 planos
+  reais: Starter/Duo/Pro/Elite, Pro com `.pricing-card--featured` + badge
+  "Mais popular"). O toggle mensal/anual é FUNCIONAL —
+  `initBillingToggle` (js/main.js) troca o texto de qualquer elemento com
+  `data-monthly`/`data-annual` e alterna `.is-annual` nos `.pricing-card`
+  (mostra `.pricing-card__installment`/`.pricing-card__savings`,
+  escondidos por padrão).
+  - `.pricing-card` é `display: flex; flex-direction: column;` — **margens
+    entre seus filhos diretos NÃO colapsam** (regra do Flexbox, diferente
+    de siblings de bloco normal) — ao adicionar espaçamento novo entre
+    filhos desse componente, ter isso em mente.
+  - **`.pricing-card--featured .pricing-card__name` e
+    `.pricing-card--featured .pricing-card__amount` usam
+    `color: var(--color-brand)`** (pedido explícito do usuário, com print
+    anotado: "a cor do título" e "o preço" deveriam usar a mesma cor do
+    badge "Mais popular") — **escopado só ao card `--featured` (Pro)**,
+    não à regra base. 1ª tentativa aplicou na regra base de
+    `.pricing-card__name`/`__amount` (afetando os 4 cards); usuário
+    corrigiu explicitamente: "é apenas para... o Pruxor Pro", então virou
+    seletor composto (`.pricing-card--featured .pricing-card__name`), do
+    jeito que `.pricing-card--featured`/`.pricing-card__badge` já fazem
+    pro border/box-shadow/badge — mesma lógica de "só o destacado ganha
+    tratamento especial", agora estendida à cor de nome+preço também.
+    `.pricing-card__period` ("/mês") não muda.
+- **FAQ (`#faq`) e CTA final reescritos com copy oficial, e o CTA final
+  TROCOU DE COMPONENTE** (2026-08-22). FAQ: as 6 perguntas antigas
+  (genéricas, "A Pruxor é só um CRM?" etc.) foram substituídas por 9
+  perguntas reais do briefing (cartão de crédito no teste, o que acontece
+  no fim dos 15 dias, fidelidade/cancelamento, limite de obras por plano,
+  precisa ser engenheiro, funciona no celular, planos baratos têm menos
+  função, sair da planilha aos poucos, dificuldade de uso) — mesma
+  estrutura `.faq-item`/accordion, só o conteúdo mudou, sem CSS/JS novo.
+  - **CTA final não é mais `.call-to-action` (fundo cor de marca) — virou
+    a antiga sessão `.full-width-feature` (fundo `--color-ink`, "Feita
+    para quem precisa tocar operação de verdade.") REPOSICIONADA pra
+    depois do FAQ e com a copy trocada** pra "Sua próxima obra pode ser a
+    primeira com controle total." + parágrafo + CTA. Pedido explícito do
+    usuário, indicando a sessão pelo print (fundo escuro, card
+    arredondado). A antiga seção `.call-to-action` do `index.html`
+    (heading "Sua empresa não precisa continuar operando no escuro.", 2
+    botões: "Experimente gratuitamente" + "Ver planos") foi REMOVIDA por
+    completo — substituída pela `.full-width-feature` reposicionada. **A
+    classe `.call-to-action` foi removida do CSS em 2026-08-22** (junto
+    com a exclusão de `sobre.html`/`solucoes.html`/`planos.html`, as
+    últimas páginas que ainda a usavam) — não existe mais no projeto.
+  - **Estrutura dentro de `.full-width-feature`**: heading + parágrafo
+    seguidos de `.full-width-feature__cta-group` (wrapper com `gap`
+    menor que o `gap` do container pai — CTA primário
+    `.btn.btn--on-dark` + `.full-width-feature__microcopy` logo abaixo,
+    mesmo padrão do par botão+microcopy do hero) e, fora desse grupo,
+    `.full-width-feature__secondary-cta` (link sublinhado, "Ainda com
+    dúvida? Fala com a gente no WhatsApp"). Número/mensagem chegaram no
+    "MAPA DE LINKS" (2026-08-22):
+    `href="https://wa.me/5521966616597?text=..."` com a mensagem
+    pré-preenchida "Olá, vim do site e quero saber mais sobre o Sistema
+    Pruxor." (texto codificado via `encodeURIComponent`, não digitado à
+    mão) + `target="_blank" rel="noopener"` (mesmo padrão do link do
+    Instagram no rodapé, por abrir em outra aba/app).
+  - **Fundo com brilho radial + textura de grade, igual ao `.card--vivid`**
+    (2026-08-22, "adicionar o mesmo plano de fundo do card") — antes o
+    CTA final tinha só a cor sólida `--bg-inverse` (= `--color-ink`), sem
+    nenhuma textura/brilho. Adicionado `::before` (brilho radial na cor
+    de marca) + `::after` (textura de grade), MESMA receita e mesma
+    posição fixa (`20% 0%`) já usada em `.compare` — consistência entre
+    as sessões escuras do site. Heading/parágrafo/cta-group/secondary-cta
+    ganharam `position: relative; z-index: 1;` pra ficarem acima dos
+    novos pseudo-elementos. (Existiu uma variante `.full-width-feature--audience`,
+    layout 2 colunas com lista de badges em loop, usada só em
+    `solucoes.html` — removida junto com a página em 2026-08-22, ver
+    `memoria.md`. A versão base descrita aqui é a única que resta.)
+- **Rodapé (`.site-footer`) ganhou copy oficial: contato e links legais,
+  ícones sociais antigos removidos** (2026-08-22). Logo+tagline e
+  nav-links (`Sobre`/`Soluções`/`Planos`/`FAQ`) não mudaram — já batiam
+  com o briefing. Duas coisas novas:
+  - **`.footer__contact-links`** (nova coluna em `.footer__top`, ao lado
+    de brand e nav-links): e-mail (`mailto:contato@pruxor.com.br`) e
+    Instagram (`https://www.instagram.com/sistemapruxor`, `target="_blank"`)
+    separados por `.footer__divider` (traço vertical de 1px, mesma receita
+    de divisor visual do `.compare__divider` — nunca um caractere "|"
+    literal, para seguir o padrão do resto do site). No mobile
+    (≤767px), a lista empilha em coluna e o divisor some
+    (`display:none`) — sem isso, o divisor ficava órfão sozinho no fim da
+    1ª linha quando os dois links quebravam (bug real, achado no
+    screenshot antes de finalizar; mesma lição do `.compare__divider`
+    que já some no mobile por motivo parecido).
+  - **`.footer__legal-links`** (substituiu `.footer__social` — os ícones
+    de LinkedIn/X eram placeholder/inferidos, sem equivalente na copy
+    oficial): "Política de Privacidade" e "Termos de Uso", mesmo
+    `.footer__divider` entre eles, dentro de `.footer__bottom` ao lado do
+    copyright (drop-in no lugar de `.footer__social`, mesmo
+    `justify-content: space-between`, sem precisar reestruturar o
+    container). **Ambos os links usam `href="#"` — não existem páginas de
+    política de privacidade/termos no site** e criar essas páginas não
+    foi pedido explicitamente (regra do projeto: não criar rotas novas
+    sem pedido explícito). Ficam como placeholder até o usuário fornecer
+    o conteúdo ou pedir a criação das páginas.
+  - **`.footer__social` foi removida do CSS e do HTML nas 4 páginas** —
+    confirmado sem uso via grep antes de apagar.
+  - **Sem WhatsApp no rodapé, de propósito** (pedido explícito do
+    usuário). O WhatsApp aparece em 3 pontos do site: o CTA final
+    (`.full-width-feature__secondary-cta`, ver bullet acima) e os 2
+    botões "Solicitar demonstração" do nav (desktop + mobile,
+    `.nav__actions`/`.nav__actions--mobile`) — adicionado depois, 2026-08-22,
+    pedido explícito ("deve ter o mesmo link do botão falar no
+    whatsapp"); antes eram `href="#"`. Mesmo número/mensagem
+    pré-preenchida dos três, `target="_blank" rel="noopener"`.
+- **"MAPA DE LINKS" do usuário (2026-08-22)** — resolveu o WhatsApp do CTA
+  final (ver bullet acima) e trouxe os links reais de checkout Greenn para
+  os planos Starter/Pro/Elite **mensais**; Duo (mensal e anual) e os 3
+  planos no anual ainda não têm checkout pronto ("a criar"/"a coletar",
+  nas palavras do usuário). Também aproveitei pra apontar os 2 botões
+  "Entrar" (nav desktop + mobile) pra `https://www.pruxor.com/login` nas
+  4 páginas — não estava no mapa explicitamente, mas é literalmente a
+  mesma URL de login/teste já usada em todo CTA do site, então tratado
+  como o mesmo tipo de correção. **Os 4 cards de plano NÃO foram tocados
+  ainda** — perguntei ao usuário se o link do Greenn deveria substituir o
+  CTA "Começar teste grátis" por plano (viraria uma ação de
+  assinar-agora) e ele optou explicitamente por "não mexer nos cards
+  ainda", guardando os links Greenn só como referência até ele decidir
+  como/quando aplicar (possivelmente esperando o conjunto ficar completo:
+  Duo + os 3 anuais). **Não presumir que os 3 links mensais (Starter/Pro/
+  Elite) devem ser aplicados aos `pricing-card__cta` sem confirmação nova
+  do usuário** — a decisão de deixar como está foi explícita, não uma
+  omissão.
+
+## Comandos
+
+Não há build nem instalação. Servir como estático:
+
+```
+npx serve .
+# ou
+python -m http.server 8000
+```
+
+Abrir `index.html` direto (`file://`) também funciona, exceto pelo
+carregamento das fontes via CDN, que precisa de rede.
+
+Não há suíte de testes automatizados no repositório.
+
+## Cuidados importantes
+
+- Não reintroduzir conteúdo, imagens ou ícones do site de referência
+  original — direitos autorais de terceiros.
+- Não trocar a fonte de volta para uma paga sem confirmar licença.
+- Ao usar `position: sticky` ou `position: fixed`, checar se algum
+  ancestral tem `backdrop-filter`, `filter` ou `transform` — isso quebra
+  sticky/fixed silenciosamente (já aconteceu com o header e o menu
+  mobile).
+- Elementos com `z-index` só competem entre si se também tiverem
+  `position` diferente de `static` — um irmão com `position:static` (sem
+  z-index efetivo) pode ficar coberto por outro com z-index explícito
+  mesmo estando "por cima" na hierarquia visual esperada (já aconteceu:
+  o botão de hambúrguer ficava atrás do overlay do menu mobile).
+- O `scroll-behavior: smooth` global pode atrapalhar leituras de posição
+  logo após um `scrollIntoView`/clique em âncora — aguardar o
+  assentamento antes de medir.
+- **Todo `.section-header` (ou variante) novo precisa de uma regra própria
+  de `margin-bottom` explícita** (ex: `.problem__header`,
+  `.feature-showcase__header`, `.how-it-works__header`,
+  `.compare__intro`) — `h2`/`p` têm `margin: 0` por reset global (linha
+  ~107 do `style.css`) e `.section-header` em si não define
+  `margin-bottom` nenhum, então sem essa regra o header encosta direto no
+  conteúdo seguinte (0px de gap real, não só "parece pouco"). Já aconteceu
+  DUAS vezes na copy oficial (sessões "Como funciona" e "Planilha vs
+  Pruxor") — ao criar qualquer sessão nova com `.section-header`, adicionar
+  o `margin-bottom: var(--space-l)` (ou similar) desde já, não só depois
+  que o usuário reportar.
+- Medir espaçamento entre elementos com `getBoundingClientRect()` sem
+  rolar até eles primeiro pode dar leitura errada por outro motivo
+  também: um elemento `[data-reveal]` ainda não revelado carrega um
+  `transform` do estado "escondido" (que `getBoundingClientRect` inclui
+  no cálculo), enquanto o CONTAINER pai (se não tiver `data-reveal`
+  próprio) não tem esse transform — comparar os dois dá números que não
+  batem entre si, sugerindo um espaçamento/overlap que não existe de
+  verdade (já aconteceu ajustando o espaçamento de "Como funciona").
+  Sempre `scrollIntoViewIfNeeded()` + esperar a transição assentar antes
+  de medir qualquer coisa relacionada a `data-reveal`.
+- Espaçamento vertical em cima do primeiro filho de um elemento
+  `position: sticky`/`fixed` deve usar `padding` no ancestral posicionado,
+  nunca `margin-top` no filho — o filho não tem irmão/borda/padding antes
+  dele, então a margin-top colapsa com a do pai (margin collapsing) e,
+  combinada com sticky/fixed, o respiro simplesmente não aparece
+  visualmente (já aconteceu com a pílula da navbar ao rolar).
+- `overflow-x`/`overflow-y` diferentes um do outro (ex: `overflow-x:
+  hidden; overflow-y: visible;`) **não deixam o eixo `visible` de fato
+  visible** — pela spec do CSS Overflow Module, o navegador força esse
+  eixo pro valor usado `auto`, que ainda recorta (só evita a barra de
+  scroll quando não precisa). Pra confirmar o valor real, checar
+  `getComputedStyle(el).overflowY` (não o que foi escrito no CSS). Já
+  aconteceu: zoom/lift e sombra do hover de `.card--vivid` dentro de um
+  container com scroll horizontal ficavam cortados mesmo com
+  `overflow-y: visible` escrito — a correção de verdade foi aumentar o
+  `padding` do elemento, não o valor de overflow em si. **Qualquer
+  container novo com `overflow: hidden` que contenha um `.card--vivid`
+  (ou qualquer elemento com hover de lift/scale/glow) precisa desse mesmo
+  tratamento desde a implementação inicial** — já aconteceu mais de uma
+  vez (ver `.testimonials__loop` em "Design e experiência"): usar
+  `overflow-x: hidden; overflow-y: visible;` (nunca o shorthand
+  `overflow: hidden` quando só o eixo horizontal precisa recortar de
+  verdade) + padding vertical generoso
+  (~50px/75px) pra dar espaço ao hover, não só depois que o usuário
+  reportar o corte.
+- **Padding no container NÃO cria folga pra filhos `position: absolute`
+  com `inset: 0`** — pela spec, o "containing block" de um elemento
+  absoluto é a PADDING BOX do ancestro posicionado, e essa padding box já
+  INCLUI o padding em si; `inset: 0` alinha com a borda externa dessa
+  caixa (que inclui o padding), não com a borda do conteúdo. Ou seja,
+  aumentar o `padding` do container não sobra espaço nenhum pro filho
+  `inset: 0` — ele continua preenchendo exatamente a mesma área de antes.
+  Confirmado via `getBoundingClientRect` na sessão "Como funciona"
+  (`.how-it-works__card-col`/`.how-it-works__card`): padding de 32px/28px
+  no container não mudou nem 1px o retângulo do card, hover incluso. A
+  correção certa é dar `inset` com valores >0 DIRETO no próprio filho
+  absoluto (ex: `inset: 32px 28px` em vez de `inset: 0`) — isso desloca
+  as bordas do elemento posicionado de verdade. Vale pra qualquer combo
+  futuro de `overflow: hidden` no container + filho `position: absolute;
+  inset: 0` que precise de folga pro hover (lift/scale/glow) não ficar
+  cortado.
+- `flex-wrap: nowrap` (ou qualquer largura fixa) num componente pensado
+  pra uma faixa específica de tela pode estourar a largura da página
+  **inteira** em telas menores, não só cortar visualmente dentro do
+  próprio componente — checar `document.body.scrollWidth >
+  window.innerWidth` (não só olhar o componente isolado) em toda a faixa
+  mobile antes de considerar um layout novo concluído, não só no
+  breakpoint onde a mudança foi pensada (já aconteceu com
+  `.about-outcomes__stats`, ver "Design e experiência").
+- **`window.scrollTo()`/`.scroll()`/`.scrollBy()`/`.scrollIntoView()`
+  respeitam `scroll-behavior: smooth` do CSS (a menos que passem
+  `behavior: 'auto'` explícito no objeto de opções); atribuição direta a
+  `elemento.scrollTop`/`.scrollLeft` NUNCA respeita, é sempre
+  instantânea.** Chamar qualquer um desses MÉTODOS dentro de um loop de
+  animação (JS) sem se dar conta disso é perigoso: cada chamada do loop
+  (rodando a ~60fps) dispara sua própria animação nativa do navegador,
+  que nunca termina antes da próxima chamada chegar — resultado
+  imprevisível (aconteceu numa tentativa de smooth scroll customizado,
+  implementada e depois totalmente revertida a pedido do usuário — ver
+  "Design e experiência" e `memoria.md`, mas a lição em si continua
+  válida pra qualquer scroll animado via JS no futuro). Se algum dia for
+  preciso animar scroll manualmente via JS de novo, preferir atribuição
+  direta (`document.scrollingElement.scrollTop = y`) em vez de qualquer
+  um dos métodos — mais simples e nunca precisa lembrar de passar
+  `behavior: 'auto'`.
+- **Nota de metodologia de teste (Playwright + Chromium headless neste
+  ambiente)**: `window.scrollY` não reflete de forma confiável chamadas a
+  `window.scrollTo()` disparadas via `page.evaluate()` isoladas (mesmo
+  com `behavior: 'auto'`) — confirmado em página totalmente vanilla, sem
+  nenhum JS do projeto envolvido. Interações mais "reais" (`page.mouse.wheel()`,
+  `page.keyboard.press()`, cliques de verdade) refletem `scrollY`
+  corretamente na maioria dos casos, mas podem exigir mais
+  iterações/tempo de espera do que o intuitivo. Ao testar qualquer coisa
+  ligada a scroll: preferir `page.mouse.wheel()`/`scrollIntoViewIfNeeded()`
+  a `window.scrollTo()`/`dispatchEvent(new WheelEvent(...))` via
+  `evaluate()`, e verificar efeitos colaterais observáveis (classe
+  `.is-active`, `getComputedStyle().transform`, contagem de
+  `data-reveal.is-visible`) em vez de confiar só no valor bruto de
+  `window.scrollY` de uma única leitura.
+
+## Memória
+
+O arquivo `memoria.md` guarda o histórico de decisões e o estado atual do
+projeto. **Consulte `memoria.md` antes de iniciar qualquer trabalho
+relevante em uma nova sessão.**

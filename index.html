@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pruxor | Sistema de Gestão de Obras para Construtores</title>
+  <meta name="description" content="Controle o financeiro de cada obra, faça diário de obra com fotos e orce com a tabela SINAPI. Teste grátis de 15 dias, sem cartão e sem fidelidade." />
+
+  <!-- Fontes: General Sans (grátis, via Fontshare) substitui a fonte paga do
+       site de referência (TWK Lausanne). Inter continua sendo usada para
+       elementos de interface, como no original. -->
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Filtro do holofote do hero (.hero__spotlight): distorce a máscara de
+       pontinhos com ruído animado, pra parecer água ondulando em vez de um
+       círculo estático seguindo o mouse. Só definição, nada é desenhado
+       aqui — por isso width/height 0. -->
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+    <filter id="hero-wave" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="7" result="wave-noise">
+        <animate attributeName="baseFrequency" dur="22s" values="0.012 0.018;0.018 0.011;0.012 0.018" repeatCount="indefinite" />
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="wave-noise" scale="34" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <!-- ==========================================================
+       HEADER / NAV
+       ========================================================== -->
+  <header class="site-header">
+   <div class="site-header__bar">
+    <div class="layout-gutter">
+      <div class="nav__container">
+        <a href="#" class="nav__logo">
+          <span class="nav__logo-mark"></span>
+          Pruxor
+        </a>
+
+        <nav class="nav__list">
+          <a href="#sobre" class="nav__link">Sobre</a>
+          <a href="#solucoes" class="nav__link">Soluções</a>
+          <a href="#planos" class="nav__link">Planos</a>
+          <a href="#faq" class="nav__link">FAQ</a>
+        </nav>
+
+        <div class="nav__actions">
+          <a href="https://www.pruxor.com/login" class="btn btn--secondary">Entrar</a>
+          <a href="https://wa.me/5521966616597?text=Ol%C3%A1%2C%20vim%20do%20site%20e%20quero%20saber%20mais%20sobre%20o%20Sistema%20Pruxor." class="btn btn--primary" target="_blank" rel="noopener">Solicitar demonstração</a>
+        </div>
+
+        <button class="nav__hamburger-button" aria-label="Abrir menu">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+   </div>
+
+    <!-- Mobile nav -->
+    <div class="nav__list--mobile">
+      <a href="#sobre" class="nav__link">Sobre</a>
+      <a href="#solucoes" class="nav__link">Soluções</a>
+      <a href="#planos" class="nav__link">Planos</a>
+      <a href="#faq" class="nav__link">FAQ</a>
+      <div class="nav__actions--mobile">
+        <a href="https://www.pruxor.com/login" class="btn btn--secondary">Entrar</a>
+        <a href="https://wa.me/5521966616597?text=Ol%C3%A1%2C%20vim%20do%20site%20e%20quero%20saber%20mais%20sobre%20o%20Sistema%20Pruxor." class="btn btn--primary" target="_blank" rel="noopener">Solicitar demonstração</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==========================================================
+         HERO
+         ========================================================== -->
+    <section class="hero layout-gutter">
+      <div class="hero__texture" aria-hidden="true"></div>
+      <div class="hero__spotlight" aria-hidden="true"></div>
+      <div class="layout-container hero__grid">
+        <div class="hero__content" data-reveal>
+          <span class="badge badge--inverse hero__eyebrow">Sistema de gestão de obras para construtores</span>
+          <h1 class="hero__heading">Saiba quanto cada obra te dá de <span class="text-accent-inverse">lucro antes de ela acabar.</span></h1>
+          <p class="hero__paragraph">
+            A Pruxor tira sua operação da planilha e coloca cada real na obra certa. Você acompanha
+            custo e resultado em tempo real e ainda impressiona o cliente com o diário de obra.
+          </p>
+
+          <a href="https://www.pruxor.com/login" class="btn btn--primary hero__cta">Começar meu teste grátis</a>
+          <p class="hero__microcopy">15 dias de acesso completo. Sem cartão de crédito. Sem fidelidade.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="page-sections layout-gutter">
+      <div class="layout-container">
+
+        <!-- ==========================================================
+             SOBRE / OUTCOMES — prova social logo abaixo da hero (pedido
+             explícito do usuário: mover pra cá, era a 4ª seção antes).
+             Card escuro com globo pontilhado 3D (canvas, gira sozinho via
+             requestAnimationFrame — ver initAboutGlobe em js/main.js) e
+             números que contam de 0 até o valor real ao entrar na tela
+             (ver initCountUp). Copy oficial (2026-08-22): 3 stats reais
+             de prova social (obras acompanhadas, construtores/empresas
+             atendidos, satisfação) — antes eram 4 números diferentes.
+             ========================================================== -->
+        <section class="section" id="sobre">
+          <div class="about-outcomes" data-reveal>
+            <div class="about-outcomes__texture" aria-hidden="true"></div>
+            <div class="about-outcomes__globe" aria-hidden="true">
+              <canvas class="about-outcomes__globe-canvas"></canvas>
+            </div>
+            <div class="about-outcomes__content">
+              <span class="badge badge--inverse">Sobre a Pruxor</span>
+              <h2 class="about-outcomes__heading">A Pruxor nasceu de uma <span class="text-accent-inverse">dor real do mercado.</span></h2>
+              <p class="about-outcomes__paragraph">
+                Hoje, centenas de empresas técnicas já trocaram a planilha pela Pruxor para ganhar
+                controle real sobre cada obra — e os números abaixo mostram esse resultado.
+              </p>
+              <a href="https://www.pruxor.com/login" class="btn btn--on-dark about-outcomes__cta">Começar meu teste grátis</a>
+
+              <div class="about-outcomes__stats">
+                <div class="about-outcomes__stat">
+                  <span class="about-outcomes__stat-value" data-count-to="2000" data-count-suffix="+">0+</span>
+                  <span class="about-outcomes__stat-label">Obras acompanhadas</span>
+                </div>
+                <div class="about-outcomes__stat">
+                  <span class="about-outcomes__stat-value" data-count-to="500" data-count-suffix="+">0+</span>
+                  <span class="about-outcomes__stat-label">Construtores e empresas atendidos</span>
+                </div>
+                <div class="about-outcomes__stat">
+                  <span class="about-outcomes__stat-value" data-count-to="95" data-count-suffix="%">0%</span>
+                  <span class="about-outcomes__stat-label">Satisfação dos clientes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================================
+             PROBLEM — copy oficial (2026-08-22). Ícones dos 4 cards
+             foram trocados pra combinar com os novos temas (carteira p/
+             financeiro no achismo, planilha/grid p/ "não acompanha o
+             ritmo", balão de chat c/ "?" p/ cliente cobrando posição,
+             dado p/ orçamento na intuição/aposta) — os ícones antigos
+             eram específicos demais dos temas anteriores (retrabalho,
+             equipe, prazo, operação descentralizada). Fechamento com
+             parágrafo + CTA é novo (a seção antes terminava só nos
+             cards); link do CTA "Quero organizar minhas obras" não veio
+             especificado no briefing junto com o resto da copy — usei a
+             mesma URL de login/teste grátis do CTA da hero e da sessão
+             "Sobre" por consistência, e o usuário confirmou depois que é
+             o link certo mesmo.
+             ========================================================== -->
+        <section class="section">
+          <div class="section-header problem__header" data-reveal>
+            <span class="eyebrow">O problema</span>
+            <h2 class="section-header__heading">O problema não é falta de obra. <span class="text-accent">É tocar a obra no escuro.</span></h2>
+            <p class="section-header__paragraph">Você fecha contrato, compra material, paga equipe, entrega a obra. Mas na hora de responder a pergunta mais importante, trava: essa obra deu lucro ou prejuízo?</p>
+          </div>
+
+          <div class="problem__cards">
+            <div class="card card--vivid" data-reveal>
+              <div class="card__spotlight" aria-hidden="true"></div>
+              <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <div class="card__icon">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 10h18" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="14.5" r="1.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 5.5l4-2 4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <h3 class="card__heading">Financeiro no achismo</h3>
+              <p class="card__paragraph">Gastos espalhados em planilha, caderno e conversa de WhatsApp. Você só descobre o resultado real quando a obra acaba. Às vezes nem aí.</p>
+            </div>
+            <div class="card card--vivid" data-reveal>
+              <div class="card__spotlight" aria-hidden="true"></div>
+              <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <div class="card__icon">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 10h16M4 15h16M9.5 4v16M14.5 4v16" stroke="currentColor" stroke-width="1.5"/></svg>
+              </div>
+              <h3 class="card__heading">Planilha que não acompanha o ritmo</h3>
+              <p class="card__paragraph">A planilha quebra, desatualiza e depende só de você. Quando a segunda obra entra, o controle vai embora.</p>
+            </div>
+            <div class="card card--vivid" data-reveal>
+              <div class="card__spotlight" aria-hidden="true"></div>
+              <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <div class="card__icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10.2 9.6a2 2 0 1 1 3 1.7c-.6.4-1 .8-1 1.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="15.1" r="0.9" fill="currentColor"/></svg>
+              </div>
+              <h3 class="card__heading">Cliente cobrando posição</h3>
+              <p class="card__paragraph">Sem registro organizado do andamento, você gasta tempo respondendo "como está minha obra?" e ainda passa impressão de desorganização.</p>
+            </div>
+            <div class="card card--vivid" data-reveal>
+              <div class="card__spotlight" aria-hidden="true"></div>
+              <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <div class="card__icon">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.5"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.1" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg>
+              </div>
+              <h3 class="card__heading">Orçamento na intuição</h3>
+              <p class="card__paragraph">Sem referência de preços e sem histórico, cada orçamento é uma aposta. E aposta errada sai do seu bolso.</p>
+            </div>
+          </div>
+
+          <div class="problem__closing" data-reveal>
+            <p class="problem__closing-text">A Pruxor existe para acabar com isso: uma obra organizada, um financeiro claro e um construtor que sabe exatamente onde está pisando.</p>
+            <a href="https://www.pruxor.com/login" class="btn btn--primary">Quero organizar minhas obras</a>
+          </div>
+        </section>
+
+        <div class="section-divider">
+          <span class="section-divider__line"></span>
+          <span class="section-divider__mark"></span>
+          <span class="section-divider__line"></span>
+        </div>
+
+        <!-- ==========================================================
+             FEATURE SHOWCASE (pinned steps) — a solução logo depois do
+             problema, de propósito: melhora o fluxo de leitura (entende
+             o problema → já vê a solução). Copy oficial (2026-08-22):
+             virou "5 módulos com prints" — cada `[data-step]` agora é 1
+             módulo inteiro (título + parágrafo + CTA), não mais um bloco
+             com checklist de 3 itens. `initFeatureShowcase` (js/main.js)
+             conta `.feature-showcase__block` no DOM automaticamente
+             (`steps = querySelectorAll(...).length`), então foi só
+             adicionar 3 blocos/painéis novos (`data-step="3/4/5"`) — zero
+             mudança de JS pra ir de 2 pra 5 etapas. Ainda não temos os
+             prints reais de cada tela (produto não forneceu imagens
+             ainda) — `.feature-showcase__visual-panel`/`__block-visual`
+             continuam como placeholder, agora com um rótulo de texto
+             dizendo qual tela vai entrar ali quando tivermos a imagem
+             real. Imagem e texto ficam presos (sticky) enquanto a seção
+             rola; a cada "etapa" de scroll o par imagem+texto atual dá
+             lugar ao próximo com um crossfade — nunca dois blocos de
+             texto visíveis ao mesmo tempo (ver initFeatureShowcase em
+             js/main.js). CTA único agora ("Testar tudo isso grátis por
+             15 dias" → login) — o botão secundário "Ver todas as
+             soluções" (linkava pra solucoes.html) foi removido, já que
+             essa página está sendo descontinuada e o briefing só deu 1
+             CTA.
+
+             Ajuste de layout (pedido explícito do usuário, com print):
+             `.feature-showcase__header` voltou pra DENTRO de
+             `.feature-showcase__stage` (fica preso/sticky junto com o
+             resto do conteúdo, não rola separado) e virou uma linha
+             horizontal — heading à esquerda, parágrafo à direita, nos
+             dois extremos (`justify-content: space-between`), em vez de
+             empilhado. Objetivo explícito: a sessão inteira (header +
+             módulo) cabe numa tela só (uma "viewport"), sem sobrar
+             conteúdo abaixo da dobra durante o crossfade.
+             ========================================================== -->
+        <section class="section feature-showcase" id="solucoes">
+          <div class="feature-showcase__track">
+            <div class="feature-showcase__stage">
+              <div class="feature-showcase__header" data-reveal>
+                <div class="feature-showcase__header-heading">
+                  <span class="eyebrow">Soluções</span>
+                  <h2 class="section-header__heading">Veja por dentro: tudo que a sua operação precisa, <span class="text-accent">sem inchaço.</span></h2>
+                </div>
+                <p class="feature-showcase__header-paragraph">Nada de sistema complicado que precisa de consultor para instalar. Você cria a conta, cadastra a primeira obra e começa a usar no mesmo dia, pelo computador ou pelo celular.</p>
+              </div>
+
+              <div class="feature-showcase__grid">
+                <div class="feature-showcase__visual-col">
+                  <div class="feature-showcase__visual-panel is-active" data-step="1"><span class="feature-showcase__visual-label">Tela do financeiro</span></div>
+                  <div class="feature-showcase__visual-panel" data-step="2"><span class="feature-showcase__visual-label">Tela do diário de obra</span></div>
+                  <div class="feature-showcase__visual-panel" data-step="3"><span class="feature-showcase__visual-label">Tela de orçamento</span></div>
+                  <div class="feature-showcase__visual-panel" data-step="4"><span class="feature-showcase__visual-label">Painel geral de obras</span></div>
+                  <div class="feature-showcase__visual-panel" data-step="5"><span class="feature-showcase__visual-label">Controle de estoque</span></div>
+                </div>
+
+                <div class="feature-showcase__content-col">
+                  <div class="feature-showcase__block is-active" data-step="1">
+                    <div class="feature-showcase__block-visual" aria-hidden="true"><span class="feature-showcase__visual-label">Tela do financeiro</span></div>
+                    <h3 class="feature-set__heading">Controle financeiro por obra</h3>
+                    <p class="feature-set__paragraph">Lance receitas e despesas separadas por obra, compare o previsto com o realizado e veja o que ainda falta gastar. Além do centro de custo por obra, você tem a visão financeira global da empresa. Chega de descobrir prejuízo depois que a obra acabou.</p>
+                    <div class="feature-showcase__actions">
+                      <a href="https://www.pruxor.com/login" class="btn btn--primary">Testar tudo isso grátis por 15 dias</a>
+                    </div>
+                  </div>
+
+                  <div class="feature-showcase__block" data-step="2">
+                    <div class="feature-showcase__block-visual" aria-hidden="true"><span class="feature-showcase__visual-label">Tela do diário de obra</span></div>
+                    <h3 class="feature-set__heading">Diário de obra profissional</h3>
+                    <p class="feature-set__paragraph">Registre o andamento com fotos e disponibilize para o cliente final acompanhar. O cliente vê evolução, você ganha autoridade. É o tipo de detalhe que faz o cliente te indicar para o próximo.</p>
+                    <div class="feature-showcase__actions">
+                      <a href="https://www.pruxor.com/login" class="btn btn--primary">Testar tudo isso grátis por 15 dias</a>
+                    </div>
+                  </div>
+
+                  <div class="feature-showcase__block" data-step="3">
+                    <div class="feature-showcase__block-visual" aria-hidden="true"><span class="feature-showcase__visual-label">Tela de orçamento</span></div>
+                    <h3 class="feature-set__heading">Orçamento com a tabela SINAPI</h3>
+                    <p class="feature-set__paragraph">Monte orçamentos puxando os itens da tabela SINAPI, a referência nacional de custos da construção. Compare com seus valores, ajuste o que quiser e feche orçamentos mais rápidos e mais precisos.</p>
+                    <div class="feature-showcase__actions">
+                      <a href="https://www.pruxor.com/login" class="btn btn--primary">Testar tudo isso grátis por 15 dias</a>
+                    </div>
+                  </div>
+
+                  <div class="feature-showcase__block" data-step="4">
+                    <div class="feature-showcase__block-visual" aria-hidden="true"><span class="feature-showcase__visual-label">Painel geral de obras</span></div>
+                    <h3 class="feature-set__heading">Gestão de obras</h3>
+                    <p class="feature-set__paragraph">Cadastre e acompanhe todas as suas obras em um painel único, com organização de processos e histórico de tudo que aconteceu.</p>
+                    <div class="feature-showcase__actions">
+                      <a href="https://www.pruxor.com/login" class="btn btn--primary">Testar tudo isso grátis por 15 dias</a>
+                    </div>
+                  </div>
+
+                  <div class="feature-showcase__block" data-step="5">
+                    <div class="feature-showcase__block-visual" aria-hidden="true"><span class="feature-showcase__visual-label">Controle de estoque</span></div>
+                    <h3 class="feature-set__heading">Controle de estoque</h3>
+                    <p class="feature-set__paragraph">Sobrou material de uma obra? Lance no estoque e aproveite o saldo no próximo orçamento. Menos desperdício, mais margem.</p>
+                    <div class="feature-showcase__actions">
+                      <a href="https://www.pruxor.com/login" class="btn btn--primary">Testar tudo isso grátis por 15 dias</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================================
+             COMO FUNCIONA — sessão nova (copy oficial, 2026-08-22), não
+             substitui nenhuma outra. 3ª versão de layout (pedido
+             explícito do usuário, com GIF + print de referência de outro
+             site): heading fica PRESO à esquerda (`position: sticky`, SEM
+             JS — nada de trilho/scroll travado) enquanto os 3 cards
+             aparecem na coluna da direita em fluxo normal de documento,
+             um abaixo do outro, exatamente como uma lista rolando —
+             "os próximos devem vir aparecendo... como uma linha do
+             tempo, não substituindo pelo próximo, deve vir de baixo para
+             cima" description do usuário bate com scroll normal (o
+             próximo card SEMPRE vem de baixo, sem nenhum crossfade ou
+             troca no lugar). (2ª versão usava scroll travado + crossfade
+             tipo "Soluções" — a mecânica nunca bateu com o efeito
+             pedido, substituída por completo, ver memoria.md.) Cada card
+             usa o padrão `.card--vivid` já existente no site (ícone
+             animado, spotlight, sparkles) + tag "Etapa N". Parágrafo
+             limitado a 2 linhas (`line-clamp`) por pedido explícito.
+             ========================================================== -->
+        <section class="section how-it-works">
+          <div class="how-it-works__layout">
+            <div class="how-it-works__intro" data-reveal>
+              <span class="eyebrow">Como funciona</span>
+              <h2 class="section-header__heading">Comece hoje. <span class="text-accent">Sem cartão, sem burocracia.</span></h2>
+              <a href="https://www.pruxor.com/login" class="btn btn--primary how-it-works__cta">Criar minha conta grátis</a>
+            </div>
+
+            <div class="how-it-works__card-col">
+              <div class="card card--vivid how-it-works__card" data-reveal>
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <div class="how-it-works__card-top">
+                  <div class="card__icon">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                  </div>
+                  <span class="how-it-works__card-tag badge badge--inverse">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                    Etapa 1
+                  </span>
+                </div>
+                <h3 class="card__heading">Crie sua conta em minutos</h3>
+                <p class="card__paragraph">Sem cadastrar cartão de crédito e sem falar com vendedor. Você entra direto na plataforma.</p>
+              </div>
+              <div class="card card--vivid how-it-works__card" data-reveal>
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <div class="how-it-works__card-top">
+                  <div class="card__icon">
+                    <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="4" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 3.5h6v2H9z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 11l2 2 4-4M9 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <span class="how-it-works__card-tag badge badge--inverse">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                    Etapa 2
+                  </span>
+                </div>
+                <h3 class="card__heading">Cadastre sua primeira obra</h3>
+                <p class="card__paragraph">Lance o financeiro, monte um orçamento, registre o diário. O sistema foi feito para você usar sozinho desde o primeiro dia.</p>
+              </div>
+              <div class="card card--vivid how-it-works__card" data-reveal>
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <div class="how-it-works__card-top">
+                  <div class="card__icon">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c2 2 3 5 3 8 0 2-1 4-3 6-2-2-3-4-3-6 0-3 1-6 3-8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 14l-3 3 1-4M15 14l3 3-1-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="9" r="1.3" fill="currentColor"/></svg>
+                  </div>
+                  <span class="how-it-works__card-tag badge badge--inverse">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                    Etapa 3
+                  </span>
+                </div>
+                <h3 class="card__heading">Use tudo por 15 dias e decida</h3>
+                <p class="card__paragraph">Acesso completo a todos os módulos durante o teste. Gostou? Escolhe o plano do seu tamanho. Não gostou? Não paga nada e não precisa cancelar nada.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================================
+             PLANILHA VS PRUXOR — sessão nova (copy oficial, 2026-08-22),
+             logo abaixo de "Como funciona". Layout inspirado num print de
+             referência (card escuro, header "Outras Agências / V/S /
+             ORIGUN", linhas com metade tracejada/apagada à esquerda e
+             metade em destaque com ícone à direita) — reaproveita o MESMO
+             fundo escuro dos cards do site (`--color-ink`, textura de
+             grade igual à hero/`.card--vivid`/`.about-outcomes`), não o
+             verde do print. Ícone de raio na cor de marca única do
+             produto, não a cor do print.
+             ========================================================== -->
+        <section class="section">
+          <div class="section-header compare__intro" data-reveal>
+            <span class="eyebrow">Planilha vs Pruxor</span>
+            <h2 class="section-header__heading">O que muda quando você sai da <span class="text-accent">planilha.</span></h2>
+          </div>
+
+          <div class="compare" data-reveal>
+            <div class="compare__texture" aria-hidden="true"></div>
+            <div class="card__spotlight" aria-hidden="true"></div>
+            <div class="compare__header">
+              <span class="compare__header-label">Na planilha</span>
+              <span class="compare__vs">VS</span>
+              <span class="compare__header-label compare__header-label--brand">
+                <span class="nav__logo-mark" aria-hidden="true"></span> Pruxor
+              </span>
+            </div>
+
+            <div class="compare__rows">
+              <div class="compare__row">
+                <p class="compare__cell compare__cell--before">Cada gasto lançado onde der, quando der</p>
+                <span class="compare__divider" aria-hidden="true"></span>
+                <p class="compare__cell compare__cell--after">
+                  <svg class="compare__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg>
+                  Cada real cai na obra certa, na hora
+                </p>
+              </div>
+              <div class="compare__row">
+                <p class="compare__cell compare__cell--before">Resultado da obra só no fim, se der tempo de calcular</p>
+                <span class="compare__divider" aria-hidden="true"></span>
+                <p class="compare__cell compare__cell--after">
+                  <svg class="compare__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg>
+                  Previsto vs realizado em tempo real, obra a obra
+                </p>
+              </div>
+              <div class="compare__row">
+                <p class="compare__cell compare__cell--before">Fórmula quebra e ninguém percebe</p>
+                <span class="compare__divider" aria-hidden="true"></span>
+                <p class="compare__cell compare__cell--after">
+                  <svg class="compare__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg>
+                  Cálculo automático, sem fórmula para estourar
+                </p>
+              </div>
+              <div class="compare__row">
+                <p class="compare__cell compare__cell--before">Só você sabe mexer no arquivo</p>
+                <span class="compare__divider" aria-hidden="true"></span>
+                <p class="compare__cell compare__cell--after">
+                  <svg class="compare__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg>
+                  Sua equipe acessa junto, cada um com seu login
+                </p>
+              </div>
+              <div class="compare__row">
+                <p class="compare__cell compare__cell--before">Cliente cobrando posição pelo WhatsApp</p>
+                <span class="compare__divider" aria-hidden="true"></span>
+                <p class="compare__cell compare__cell--after">
+                  <svg class="compare__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg>
+                  Cliente acompanha pelo diário de obra com fotos
+                </p>
+              </div>
+              <div class="compare__row">
+                <p class="compare__cell compare__cell--before">Orçamento montado do zero a cada proposta</p>
+                <span class="compare__divider" aria-hidden="true"></span>
+                <p class="compare__cell compare__cell--after">
+                  <svg class="compare__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg>
+                  Orçamento puxando a tabela SINAPI em minutos
+                </p>
+              </div>
+              <div class="compare__row">
+                <p class="compare__cell compare__cell--before">Arquivo preso em um computador</p>
+                <span class="compare__divider" aria-hidden="true"></span>
+                <p class="compare__cell compare__cell--after">
+                  <svg class="compare__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg>
+                  Tudo na nuvem, no celular e no computador
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="compare__closing" data-reveal>
+            <div class="compare__closing-grid">
+              <a href="https://www.pruxor.com/login" class="btn btn--primary compare__closing-btn">Quero fazer essa troca</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================================
+             DIFERENCIAIS (comerciais) — sessão nova (copy oficial,
+             2026-08-22), logo abaixo de "Planilha vs Pruxor". Segue o
+             mesmo padrão de "Problema": section-header + grid de 4
+             `.card--vivid`. Única sessão "Diferenciais" do site — a
+             versão antiga (foco no setor/centralização/etc.) foi
+             removida. Classes próprias (`.value-props__*`) pra não
+             colidir com `.problem__cards`.
+             ========================================================== -->
+        <section class="section">
+          <div class="section-header value-props__header" data-reveal>
+            <span class="eyebrow">Diferenciais</span>
+            <h2 class="section-header__heading">A gestão profissional de obras para quem <span class="text-accent">começou sozinho.</span></h2>
+            <p class="section-header__paragraph">Por que construtores estão trocando a planilha (e outros sistemas) pela Pruxor:</p>
+          </div>
+
+          <div class="value-props__cards">
+            <div class="card card--vivid" data-reveal>
+              <div class="card__spotlight" aria-hidden="true"></div>
+              <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <div class="card__icon">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 11V7a4 4 0 0 1 7.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.3" fill="currentColor"/></svg>
+              </div>
+              <h3 class="card__heading">Sem fidelidade mínima</h3>
+              <p class="card__paragraph">Tem sistema no mercado que te prende por 12 meses de contrato. Na Pruxor você fica porque quer: cancele quando quiser, sem multa.</p>
+            </div>
+            <div class="card card--vivid" data-reveal>
+              <div class="card__spotlight" aria-hidden="true"></div>
+              <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <div class="card__icon">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M12 9v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 2.5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <h3 class="card__heading">Teste de verdade, sem cartão</h3>
+              <p class="card__paragraph">15 dias com acesso completo, sem cadastrar cartão de crédito. Você só paga se decidir ficar.</p>
+            </div>
+            <div class="card card--vivid" data-reveal>
+              <div class="card__spotlight" aria-hidden="true"></div>
+              <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <div class="card__icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3 13l9 5 9-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <h3 class="card__heading">Acesso completo em todos os planos</h3>
+              <p class="card__paragraph">Nenhuma funcionalidade travada. O que muda entre os planos é a quantidade de obras e de acessos, nunca o que o sistema faz.</p>
+            </div>
+            <div class="card card--vivid" data-reveal>
+              <div class="card__spotlight" aria-hidden="true"></div>
+              <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+              <div class="card__icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 16a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 16h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 8V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <h3 class="card__heading">Feita para obra, não adaptada</h3>
+              <p class="card__paragraph">Não é um sistema genérico com nome bonito. Foi construída para a rotina de quem toca obra de verdade.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================================
+             DEPOIMENTOS — sessão nova (copy oficial, 2026-08-22), logo
+             abaixo de "Diferenciais". Carrossel em loop contínuo (CSS
+             puro, sem JS): a lista de 5 depoimentos
+             é duplicada uma vez (2ª cópia com aria-hidden) dentro de
+             .testimonials__track, que anima translateX(0 → -50%) — 50%
+             é exatamente a largura de UMA cópia, dando loop sem salto.
+             Nome/cidade são fictícios (pedido explícito do usuário,
+             já que o briefing só deu texto+profissão reais); "foto"
+             virou avatar com iniciais coloridas (variação da cor de
+             marca, nunca uma paleta nova) em vez de uma foto realista —
+             o site é 100% vanilla/SVG, sem nenhuma imagem real ainda
+             (ver CLAUDE.md), então evitei introduzir o primeiro asset de
+             imagem do projeto sem alinhar antes; se o usuário preferir
+             fotos de verdade, ajustar depois. Cards reusam `.card--vivid`
+             (mesmo padrão dark de "Problema"/"Diferenciais"), com
+             estrutura interna nova (aspas + texto + rodapé com avatar).
+             ========================================================== -->
+        <section class="section">
+          <div class="section-header section-header--center testimonials__header" data-reveal>
+            <span class="eyebrow">Depoimentos</span>
+            <h2 class="section-header__heading">Quem usa, <span class="text-accent">aprova.</span></h2>
+          </div>
+
+          <div class="testimonials__loop" data-reveal>
+            <div class="testimonials__track">
+              <div class="card card--vivid testimonial-card">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">Eu tocava três obras ao mesmo tempo e não sabia dizer quanto estava ganhando em nenhuma delas. Era tudo na planilha e no caderno. Com a Pruxor eu lanço cada gasto na obra certa e vejo o resultado na hora. Hoje eu sei exatamente qual obra dá lucro e qual precisa de atenção.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">MF</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">Marcos Ferreira</span>
+                    <span class="testimonial-card__role">Construtor · Belo Horizonte, MG</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card card--vivid testimonial-card">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">O que mais me ganhou foi o orçamento puxando a tabela SINAPI. Eu monto a base com os valores de referência, ajusto com os meus custos e fecho proposta muito mais rápido. O que antes levava dias, hoje sai no mesmo dia.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">RS</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">Rafael Souza</span>
+                    <span class="testimonial-card__role">Engenheiro civil e construtor · Curitiba, PR</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card card--vivid testimonial-card">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">O diário de obra mudou a relação com os meus clientes. Eles acompanham as fotos e o andamento sem precisar me ligar toda hora. Passa outra imagem, de empresa organizada. Já fechei obra nova por indicação de cliente que gostou desse acompanhamento.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">AM</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">André Martins</span>
+                    <span class="testimonial-card__role">Sócio de construtora · Campinas, SP</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card card--vivid testimonial-card">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">Assinei depois do teste grátis. Entrei sem cadastrar cartão, cadastrei minha primeira obra sozinho no mesmo dia e em uma semana já estava com tudo lançado. É simples de verdade, não precisa ser expert em sistema.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">EL</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">Eduardo Lima</span>
+                    <span class="testimonial-card__role">Construtor · Goiânia, GO</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card card--vivid testimonial-card">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">Trabalho com reformas e sempre sobrava material perdido de uma obra para outra. Agora eu controlo o estoque dentro do sistema e aproveito o saldo no orçamento seguinte. Só isso já pagou a mensalidade.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">FC</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">Fernando Costa</span>
+                    <span class="testimonial-card__role">Construtor de reformas · Porto Alegre, RS</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cópia duplicada pro loop contínuo (translateX -50% cai
+                   exatamente aqui) — mesmo conteúdo, aria-hidden pra não
+                   ser lido 2x por leitor de tela. -->
+              <div class="card card--vivid testimonial-card" aria-hidden="true">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">Eu tocava três obras ao mesmo tempo e não sabia dizer quanto estava ganhando em nenhuma delas. Era tudo na planilha e no caderno. Com a Pruxor eu lanço cada gasto na obra certa e vejo o resultado na hora. Hoje eu sei exatamente qual obra dá lucro e qual precisa de atenção.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">MF</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">Marcos Ferreira</span>
+                    <span class="testimonial-card__role">Construtor · Belo Horizonte, MG</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card card--vivid testimonial-card" aria-hidden="true">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">O que mais me ganhou foi o orçamento puxando a tabela SINAPI. Eu monto a base com os valores de referência, ajusto com os meus custos e fecho proposta muito mais rápido. O que antes levava dias, hoje sai no mesmo dia.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">RS</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">Rafael Souza</span>
+                    <span class="testimonial-card__role">Engenheiro civil e construtor · Curitiba, PR</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card card--vivid testimonial-card" aria-hidden="true">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">O diário de obra mudou a relação com os meus clientes. Eles acompanham as fotos e o andamento sem precisar me ligar toda hora. Passa outra imagem, de empresa organizada. Já fechei obra nova por indicação de cliente que gostou desse acompanhamento.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">AM</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">André Martins</span>
+                    <span class="testimonial-card__role">Sócio de construtora · Campinas, SP</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card card--vivid testimonial-card" aria-hidden="true">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">Assinei depois do teste grátis. Entrei sem cadastrar cartão, cadastrei minha primeira obra sozinho no mesmo dia e em uma semana já estava com tudo lançado. É simples de verdade, não precisa ser expert em sistema.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">EL</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">Eduardo Lima</span>
+                    <span class="testimonial-card__role">Construtor · Goiânia, GO</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card card--vivid testimonial-card" aria-hidden="true">
+                <div class="card__spotlight" aria-hidden="true"></div>
+                <svg class="card__sparkle card__sparkle--1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="card__sparkle card__sparkle--2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" fill="currentColor"/></svg>
+                <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 8.5c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1zm9 0c-2.5 1-4 3.2-4 6 0 1.9 1.3 3.3 3 3.3s3-1.4 3-3.3c0-1.7-1.1-3-2.6-3.2.4-1.2 1.4-2.2 2.6-2.8l-2-1z" fill="currentColor"/></svg>
+                <p class="testimonial-card__text">Trabalho com reformas e sempre sobrava material perdido de uma obra para outra. Agora eu controlo o estoque dentro do sistema e aproveito o saldo no orçamento seguinte. Só isso já pagou a mensalidade.</p>
+                <div class="testimonial-card__footer">
+                  <span class="testimonial-card__avatar" aria-hidden="true">FC</span>
+                  <div class="testimonial-card__meta">
+                    <span class="testimonial-card__name">Fernando Costa</span>
+                    <span class="testimonial-card__role">Construtor de reformas · Porto Alegre, RS</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================================
+             PLANOS — sessão nova (copy oficial, 2026-08-22), logo abaixo
+             de "Depoimentos". Reaproveita o componente `.pricing-card`/
+             `.pricing-grid`/`.billing-toggle` já existente (criado antes
+             pra planos.html, conteúdo aproximado) — 1 grupo só agora (não
+             mais 2 categorias), com preço mensal E anual REAIS pela
+             primeira vez. Por isso o toggle deixou de ser só visual:
+             `initBillingToggle` (js/main.js) agora troca o texto de
+             qualquer elemento com `data-monthly`/`data-annual` e alterna
+             `.is-annual` nos cards (mostra/esconde parcelamento e
+             economia). Ganhou `id="planos"` — a partir de agora o nav
+             aponta pra cá (`#planos`) em vez de direto pro arquivo
+             `planos.html` (mesmo padrão de "Soluções"/"Sobre": nav aponta
+             pra âncora quando a sessão reduzida existe no index).
+             ========================================================== -->
+        <section class="section" id="planos">
+          <div class="section-header section-header--center planos__header" data-reveal>
+            <span class="eyebrow">Planos</span>
+            <h2 class="section-header__heading">Planos do tamanho da <span class="text-accent">sua operação.</span></h2>
+            <p class="section-header__paragraph">Todos os planos têm acesso completo a todas as funcionalidades e 15 dias de teste grátis. Escolha pelo número de obras e de acessos.</p>
+          </div>
+
+          <div class="billing-toggle" data-reveal role="group" aria-label="Ciclo de cobrança">
+            <button type="button" class="billing-toggle__option is-active" data-billing="monthly">Mensal</button>
+            <button type="button" class="billing-toggle__option" data-billing="annual">Anual</button>
+          </div>
+          <p class="billing-toggle__hint" data-reveal>No plano anual, pague o equivalente a cerca de 10 meses.</p>
+
+          <div class="pricing-grid">
+            <div class="pricing-card" data-reveal>
+              <h3 class="pricing-card__name">Pruxor Starter</h3>
+              <p class="pricing-card__desc">Ideal para o construtor autônomo que está começando a se organizar.</p>
+              <p class="pricing-card__price">
+                <span class="pricing-card__amount" data-monthly="R$97" data-annual="R$947">R$97</span>
+                <span class="pricing-card__period" data-monthly="/mês" data-annual="à vista">/mês</span>
+              </p>
+              <p class="pricing-card__installment">ou 3x de R$337,31 no cartão</p>
+              <p class="pricing-card__savings">Economize R$217 no ano</p>
+              <ul class="pricing-card__features">
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>1 usuário</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Até 10 obras cadastradas</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Acesso completo à plataforma</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Suporte por e-mail</span></li>
+              </ul>
+              <a href="https://www.pruxor.com/login" class="btn btn--secondary pricing-card__cta">Começar teste grátis</a>
+            </div>
+
+            <div class="pricing-card" data-reveal>
+              <h3 class="pricing-card__name">Pruxor Duo</h3>
+              <p class="pricing-card__desc">Para quem toca a obra a dois: construtor no campo, administrativo no escritório.</p>
+              <p class="pricing-card__price">
+                <span class="pricing-card__amount" data-monthly="R$149" data-annual="R$1.447">R$149</span>
+                <span class="pricing-card__period" data-monthly="/mês" data-annual="à vista">/mês</span>
+              </p>
+              <p class="pricing-card__installment">ou 3x no cartão (valor conforme checkout)</p>
+              <p class="pricing-card__savings">Economize R$341 no ano</p>
+              <ul class="pricing-card__features">
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>2 usuários</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Até 10 obras cadastradas</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Acesso completo à plataforma</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Suporte por e-mail</span></li>
+              </ul>
+              <a href="https://www.pruxor.com/login" class="btn btn--secondary pricing-card__cta">Começar teste grátis</a>
+            </div>
+
+            <div class="pricing-card pricing-card--featured" data-reveal>
+              <span class="pricing-card__badge">Mais popular</span>
+              <h3 class="pricing-card__name">Pruxor Pro</h3>
+              <p class="pricing-card__desc">Para equipes pequenas que precisam crescer com estrutura.</p>
+              <p class="pricing-card__price">
+                <span class="pricing-card__amount" data-monthly="R$297" data-annual="R$2.947">R$297</span>
+                <span class="pricing-card__period" data-monthly="/mês" data-annual="à vista">/mês</span>
+              </p>
+              <p class="pricing-card__installment">ou 3x de R$1.049,68 no cartão</p>
+              <p class="pricing-card__savings">Economize R$617 no ano</p>
+              <ul class="pricing-card__features">
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Até 5 usuários</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Até 25 obras cadastradas</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Acesso completo à plataforma</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Relatórios e dashboards</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Suporte prioritário</span></li>
+              </ul>
+              <a href="https://www.pruxor.com/login" class="btn btn--primary pricing-card__cta">Começar teste grátis</a>
+            </div>
+
+            <div class="pricing-card" data-reveal>
+              <h3 class="pricing-card__name">Pruxor Elite</h3>
+              <p class="pricing-card__desc">Para construtoras com operação consolidada.</p>
+              <p class="pricing-card__price">
+                <span class="pricing-card__amount" data-monthly="R$697" data-annual="R$7.247">R$697</span>
+                <span class="pricing-card__period" data-monthly="/mês" data-annual="à vista">/mês</span>
+              </p>
+              <p class="pricing-card__installment">ou 3x de R$2.581,27 no cartão</p>
+              <p class="pricing-card__savings">Economize R$1.117 no ano</p>
+              <ul class="pricing-card__features">
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Até 15 usuários</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Até 50 obras cadastradas</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Acesso completo à plataforma</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gestão multiobra avançada</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Suporte prioritário</span></li>
+              </ul>
+              <a href="https://www.pruxor.com/login" class="btn btn--secondary pricing-card__cta">Começar teste grátis</a>
+            </div>
+          </div>
+
+          <p class="planos__strip" data-reveal>No plano anual você paga o equivalente a cerca de 10 meses: a economia vai de R$217 no Starter até R$1.117 no Elite.</p>
+          <p class="planos__implementation" data-reveal>Quer ajuda para colocar suas obras e seu financeiro dentro do sistema? Temos um serviço de implementação com acompanhamento dedicado, com valor sob consulta de acordo com o volume da sua operação.</p>
+        </section>
+
+        <!-- ==========================================================
+             FAQS
+             ========================================================== -->
+        <section class="section faqs" id="faq">
+          <div class="faqs__grid">
+            <div data-reveal>
+              <span class="eyebrow">Perguntas frequentes</span>
+              <h2 class="section-header__heading">Dúvidas comuns</h2>
+              <p class="section-header__paragraph">Respostas objetivas para quem está tentando organizar a operação sem perder tempo.</p>
+            </div>
+
+            <div class="faqs__list" data-accordion data-reveal>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  Preciso cadastrar cartão de crédito para testar?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">Não. Você cria a conta e usa a plataforma completa por 15 dias sem informar nenhum dado de pagamento.</p>
+                </div>
+              </div>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  O que acontece quando os 15 dias acabam?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">O acesso é bloqueado e você escolhe se quer assinar um plano. Nada é cobrado automaticamente e você não precisa cancelar nada.</p>
+                </div>
+              </div>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  Tem fidelidade ou multa de cancelamento?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">Não. Os planos são mensais e você cancela quando quiser. No plano anual, você garante desconto pagando o ano com economia.</p>
+                </div>
+              </div>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  Como funciona o limite de obras de cada plano?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">O limite considera o total de obras cadastradas na sua conta. Se a sua operação crescer e você chegar perto do limite, é só fazer upgrade para o próximo plano direto na plataforma.</p>
+                </div>
+              </div>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  Preciso ser engenheiro para usar a Pruxor?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">Não. A Pruxor foi feita para o construtor, com ou sem formação em engenharia. Se você toca obra, ela é para você.</p>
+                </div>
+              </div>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  Funciona no celular? Tem aplicativo?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">A Pruxor funciona perfeitamente no navegador do celular, sem precisar instalar nada. É só salvar o atalho na tela inicial e usar como se fosse um app.</p>
+                </div>
+              </div>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  Os planos mais baratos têm menos funcionalidades?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">Não. Todos os planos, inclusive o teste grátis, têm acesso completo a todos os módulos. A diferença entre os planos está apenas na quantidade de obras e de acessos.</p>
+                </div>
+              </div>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  Preciso parar minha operação para sair da planilha?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">Não. Você começa cadastrando uma única obra e faz o primeiro lançamento no mesmo dia, sem mexer no resto da operação. As outras obras você traz no seu ritmo. E durante o teste, o suporte te acompanha nas dúvidas.</p>
+                </div>
+              </div>
+              <div class="faq-item" data-accordion-item>
+                <button class="faq-item__trigger" data-accordion-trigger>
+                  O sistema é difícil de usar?
+                  <span class="faq-item__icon"></span>
+                </button>
+                <div class="faq-item__panel" data-accordion-panel>
+                  <p class="faq-item__answer">Não. Ele foi pensado para você entrar, cadastrar a primeira obra e começar a usar sozinho no mesmo dia. E se quiser acompanhamento na organização inicial, temos o serviço de implementação opcional.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================================
+             CTA FINAL
+             ========================================================== -->
+        <section class="full-width-feature" data-reveal>
+          <h2 class="full-width-feature__heading">Sua próxima obra pode ser a primeira com <span class="text-accent">controle total.</span></h2>
+          <p class="full-width-feature__paragraph">Pare de descobrir o resultado da obra só quando ela acaba. Em 15 dias de teste grátis, você organiza o financeiro, registra o diário e monta orçamento com a tabela SINAPI. Sem cartão, sem fidelidade e sem depender de vendedor.</p>
+          <div class="full-width-feature__cta-group">
+            <a href="https://www.pruxor.com/login" class="btn btn--on-dark">Começar meu teste grátis agora</a>
+            <p class="full-width-feature__microcopy">Acesso completo por 15 dias. Sem cartão de crédito.</p>
+          </div>
+          <a href="https://wa.me/5521966616597?text=Ol%C3%A1%2C%20vim%20do%20site%20e%20quero%20saber%20mais%20sobre%20o%20Sistema%20Pruxor." class="full-width-feature__secondary-cta" target="_blank" rel="noopener">Ainda com dúvida? Fala com a gente no WhatsApp</a>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ==========================================================
+       FOOTER
+       ========================================================== -->
+  <footer class="site-footer layout-gutter">
+    <div class="layout-container">
+      <div class="footer__top">
+        <div class="footer__brand">
+          <a href="#" class="nav__logo">
+            <span class="nav__logo-mark"></span>
+            Pruxor
+          </a>
+          <p class="footer__tagline">Gestão inteligente para obras e projetos. Menos caos. Mais controle. Mais lucro.</p>
+        </div>
+
+        <nav class="footer__nav-links">
+          <a href="#sobre" class="footer__nav-link">Sobre</a>
+          <a href="#solucoes" class="footer__nav-link">Soluções</a>
+          <a href="#planos" class="footer__nav-link">Planos</a>
+          <a href="#faq" class="footer__nav-link">FAQ</a>
+        </nav>
+
+        <div class="footer__contact-links">
+          <a href="mailto:contato@pruxor.com.br" class="footer__contact-link">contato@pruxor.com.br</a>
+          <span class="footer__divider" aria-hidden="true"></span>
+          <a href="https://www.instagram.com/sistemapruxor" class="footer__contact-link" target="_blank" rel="noopener">Instagram @sistemapruxor</a>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <p>© 2026 Pruxor. Todos os direitos reservados.</p>
+        <div class="footer__legal-links">
+          <a href="#" class="footer__legal-link">Política de Privacidade</a>
+          <span class="footer__divider" aria-hidden="true"></span>
+          <a href="#" class="footer__legal-link">Termos de Uso</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
