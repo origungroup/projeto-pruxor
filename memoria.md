@@ -2633,6 +2633,330 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
   mínimo. Card tem espaço de sobra (~1150px disponíveis dentro do
   padding), sem risco de estourar em nenhuma largura de desktop comum.
 
+- **Início de uma rodada dedicada a ajustes mobile (2026-08-22)** —
+  usuário avisou explicitamente: "tudo que for passado aqui, será para
+  versão mobile". Enquanto essa rodada estiver em andamento (sem aviso
+  contrário do usuário), interpretar pedidos genéricos ("o botão", "o
+  headline", "o menu") como referindo-se especificamente ao breakpoint
+  mobile (≤767px/≤479px, ou ≤991px quando o componente em questão só tem
+  esse breakpoint, como a navbar) — não ao desktop/tablet.
+  - **Bug real corrigido: overflow horizontal no header mobile**. Usuário
+    mandou print do DevTools (emulador iPhone XR, 414×896) mostrando a
+    página "rolando pro lado" e pediu pra validar/corrigir, além de
+    confirmar que o menu mobile deveria virar hambúrguer. Causa raiz:
+    o media query `@media (max-width: 991px)` do `.nav__container`
+    escondia só `.nav__actions .btn--secondary` ("Entrar"), deixando
+    `.nav__actions .btn--primary` ("Solicitar demonstração") visível na
+    barra ao lado do hambúrguer — logo + botão + hambúrguer juntos não
+    cabiam em telas estreitas, empurrando o hambúrguer pra fora e
+    causando overflow horizontal na PÁGINA INTEIRA (não só no header).
+    Esse era exatamente o "bug pré-existente do botão de hambúrguer"
+    registrado como pendência havia várias rodadas. Corrigido escondendo
+    `.nav__actions .btn--primary` também nesse breakpoint — o header
+    mobile agora mostra só logo + hambúrguer; as duas ações (Entrar/
+    Solicitar demonstração) continuam acessíveis dentro do overlay do
+    menu (`.nav__actions--mobile`, classe/seletor diferente, não afetado
+    por essa regra). Validado via Playwright em 414/390/375/320px: zero
+    overflow em qualquer um (inclusive rolando a página inteira, não só o
+    topo), menu abre/fecha corretamente com os 2 botões + 4 âncoras
+    dentro, zero erros de console. Também descartada a hipótese de que o
+    carrossel de depoimentos (`.testimonials__track`, scrollWidth grande
+    por design, é um loop duplicado) contribuísse pro overflow — confirmado
+    que ele fica contido pelo próprio `overflow-x: hidden` do ancestral,
+    sem vazar pro `body.scrollWidth`.
+
+  - **Hero mobile passou a ocupar 80% da viewport** — pedido explícito
+    ("deixe a hero viewport 80%, para ocupar 80% da tela"). No breakpoint
+    ≤767px, `.hero` ganhou `min-height: 80vh` (não `height`, pra crescer
+    além de 80vh em vez de cortar se o conteúdo precisar de mais espaço
+    algum dia) + `display:flex; flex-direction:column;
+    justify-content:center;` pra centralizar `.hero__grid` verticalmente
+    nesse espaço (sem isso, sobraria um vão vazio embaixo em vez de
+    centralizar). Validado via Playwright em 4 tamanhos de iPhone
+    (XR/414, 390, SE/375, 14 Pro Max/430): altura bate exatamente com
+    80vh nos 3 aparelhos "normais", e no SE (o mais baixo, 667px de
+    altura) o `min-height` deixa a hero crescer um pouco além de 80vh
+    porque o conteúdo não cabe — comportamento esperado, não bug.
+    Centralização vertical confirmada (espaço livre dividido
+    uniformemente acima/abaixo do conteúdo). Sem overflow novo, sem erros
+    de console, transição pra `.about-outcomes` (próxima sessão)
+    continua com respiro adequado.
+
+  - **"Sobre a Pruxor" (`.about-outcomes`) reformulada no mobile**, 4
+    pedidos explícitos num só turno (usuário avisou que o print não
+    mostrava o conteúdo inteiro, mas pra considerar tudo mesmo assim):
+    1. Globo voltou a `position: absolute` (a regra de ≤991px tinha
+       posto em fluxo normal, empurrando badge/heading/parágrafo pra
+       baixo dele — o globo aparecia ANTES de todo o conteúdo, não atrás)
+       — content (`z-index:1`) por cima, globo (`z-index:0`) atrás.
+    2. Globo aumentado pra `height: 40%` do card (`aspect-ratio:1`
+       herdado deriva a largura), ancorado embaixo e centralizado
+       (`bottom:0; left:50%; transform:translateX(-50%)`) — troca do
+       antigo ancoramento de canto (`translate(50%,50%)`, pensado só pro
+       recorte de 1/4 do desktop).
+    3. Padding do card: `var(--space-l) var(--space-2xs)` — bateu exato
+       com os 48px/12px pedidos, sem precisar hardcodear px.
+    4. Conteúdo centralizado (`text-align:center` + `margin-inline:auto`
+       no parágrafo, que tem `max-width` próprio) e `line-height` do
+       heading reduzido de 1.55 (herdado do body, nunca tinha sido
+       definido pra esse heading especificamente — inconsistente com os
+       outros headings do site, que já usam ~1.05-1.15) pra 1.15.
+    Validado via Playwright em 414/390/375px: todas as 4 medidas batem
+    exatamente (altura do globo = 40.0% da seção, padding 48/12px,
+    centralização, line-height 1.15), sem overflow novo, zero erros de
+    console. **Observação encontrada na validação, não pedida, não
+    corrigida ainda**: como a coluna de stats é mais alta que os 40% do
+    globo, ele acaba ficando atrás dos 3 stats (não só do espaço vazio
+    abaixo deles) — os valores (grandes, brancos, negrito) continuam bem
+    legíveis, mas os rótulos pequenos (`rgba(247,247,255,0.6)`, parecido
+    com o tom dos pontinhos do globo) ficam com leitura um pouco mais
+    "mole" onde encostam em aglomerados de pontos mais densos. Não é bug
+    de layout, é só uma questão de contraste em alguns pontos — avisado
+    ao usuário, sem alterar nada até ele decidir se quer ajustar.
+
+    **2ª rodada do globo, mesmo dia**: usuário pediu "aumente o globo,
+    para que apenas 50% do globo apareça, e esses 50% do globo ocupe 40%
+    desse card" — ou seja, dobrar o círculo INTEIRO (que já tinha 40% de
+    altura) pra 80%, mas cortar exatamente a metade de baixo, deixando só
+    o semicírculo de cima visível, ocupando os mesmos 40% de antes.
+    Resolvido sem precisar calcular offset manualmente: `height: 80%` +
+    `transform: translate(-50%, 50%)` (o `translateY(50%)` usa % da
+    PRÓPRIA altura da caixa, não do container — desloca o centro do
+    círculo pra baixo até coincidir exatamente com a borda inferior do
+    card, cortando a metade de baixo via `overflow:hidden` do card).
+    Validado via Playwright: 80.00%/40.00% exatos em 414px e 390px de
+    largura. **Efeito colateral esperado, não bug**: como o círculo tem
+    aspect-ratio 1:1 e agora é bem maior (diâmetro = 80% da ALTURA do
+    card, ~625px numa tela de 414px, contra ~374px de largura do card),
+    ele também é cortado nas laterais pelo mesmo `overflow:hidden` — o
+    resultado visual não é mais um semicírculo "redondo", e sim uma
+    curva mais achatada tipo "horizonte de planeta" ocupando a largura
+    inteira do card (só a parte central/mais reta do círculo fica
+    visível, a curvatura mais fechada das bordas do círculo é cortada).
+    Screenshot confirmou visual final: globo funciona bem como pano de
+    fundo atrás dos 3 stats, lê como intencional.
+
+- **`.section-header__heading` reduzido no mobile (2026-08-22)** — usuário
+  olhou a sessão "Problema" e pediu fonte um pouco menor + linhas mais
+  próximas, com uma condição explícita: "todas as outras sessões que
+  usam essa mesma fonte devem receber o ajuste feito nesta". Como
+  `.section-header__heading` é a classe COMPARTILHADA por 8 headings
+  diferentes no `index.html` (Problema, Soluções, Como funciona, Planilha
+  vs Pruxor, Diferenciais, Depoimentos, Planos, FAQ), editar a classe em
+  si (em vez de uma classe específica de sessão) já propaga o pedido
+  automaticamente pras 8 — não precisou de nenhum trabalho extra por
+  sessão. Adicionado `@media (max-width: 767px) { .section-header__heading
+  { font-size: var(--text-2xl); line-height: 1.1; } }` — `--text-2xl`
+  (32px) é um degrau abaixo do `--text-3xl` (40px) base, mesmo padrão já
+  usado pro `<h1>` da hero no mobile (ver regra de `.hero__heading` em
+  CLAUDE.md); `line-height` 1.15→1.1 (mais apertado, mas não tão apertado
+  quanto o 1.05 da hero, já que esse heading costuma quebrar em frases de
+  3 linhas, não só 2-3 palavras). Validado via Playwright em 414px: os 8
+  headings batem com 32px/35.2px de computed style, `text-wrap:balance`
+  continua funcionando bem em todos (sem palavra órfã), sem overflow
+  novo, zero erros de console.
+
+- **`.feature-set__heading`/`.feature-set__paragraph` com linhas mais
+  próximas no mobile (2026-08-22)** — mesmo padrão de pedido do
+  `.section-header__heading`: usuário olhou o 1º módulo de "Soluções"
+  ("Controle financeiro por obra") e pediu menos espaço entre linhas,
+  "todos que seguem essa fonte devem seguir a mesma alteração". Como
+  essas duas classes são compartilhadas pelos 5 módulos (Financeiro,
+  Diário de obra, Orçamento SINAPI, Gestão de obras, Estoque), editar a
+  classe já propaga sozinho — sem precisar de nenhum ajuste por módulo.
+  Nenhum dos dois tinha `line-height` próprio antes (herdavam o 1.55
+  solto do body). Adicionado em `≤767px`: heading pra 1.15 (mesmo padrão
+  já usado nos outros headings do site), parágrafo pra 1.4 (mais compacto
+  que 1.55, mas ainda com respiro de leitura — parágrafo, não heading).
+  Validado via Playwright: os 5 módulos batem com 36.8px/22.4px de
+  computed line-height, desktop (1440px) confirmado intocado (continua
+  1.55), sem overflow novo, zero erros de console.
+
+- **Headline/subheadline centralizados em 5 sessões + CTA final com o
+  mesmo tratamento de "Sobre a Pruxor" (2026-08-22, mobile)**. Dois
+  pedidos no mesmo turno:
+  1. Centralizar headline+subheadline no mobile em: Soluções
+     (`.feature-showcase__header`), Como funciona (`.how-it-works__intro`
+     — só heading+CTA, essa sessão não tem parágrafo), Planilha vs Pruxor
+     (`.compare__intro`), Diferenciais comercial (`.value-props__header`)
+     e FAQ. Todas ganharam `text-align: center` em `≤767px`, escopado por
+     sessão (cada uma no seu próprio bloco/seletor, não uma regra
+     genérica) pra não afetar Depoimentos/Planos (que já usam
+     `.section-header--center` desde antes) nem Problema (que não estava
+     na lista). **FAQ precisou de uma classe nova** (`.faqs__intro`) — a
+     div do header do FAQ não tinha classe própria antes, só
+     `data-reveal`.
+     - **Bug real encontrado e corrigido na verificação**: em Soluções,
+       `.feature-showcase__header-paragraph` tem `text-align: left`
+       EXPLÍCITO na regra base (parte do layout desktop
+       heading-esquerda/parágrafo-direita) — texto explícito no próprio
+       elemento sempre vence herança, então centralizar só o pai
+       (`.feature-showcase__header`) não bastava pra esse parágrafo
+       específico (os outros elementos, sem `text-align` próprio,
+       herdavam certinho). Corrigido adicionando
+       `.feature-showcase__header-paragraph { text-align: center; }`
+       explicitamente dentro do mesmo bloco `≤767px`.
+  2. CTA final (`.full-width-feature`) ganhou os MESMOS 2 ajustes já
+     feitos em `.about-outcomes` numa rodada anterior — usuário pediu
+     comparando as duas sessões escuras: `padding: var(--space-l)
+     var(--space-2xs)` (48px/12px) e `.full-width-feature__heading {
+     line-height: 1.15 }` (não tinha valor próprio antes, herdava o 1.55
+     do body).
+  Validado via Playwright em 414px: as 5 sessões centralizadas (após o
+  fix do parágrafo de Soluções), `.full-width-feature` com padding
+  48/12px exatos e heading em 36.8px de line-height (32×1.15) — tudo
+  confirmado intocado em 1440px desktop (nenhuma das novas regras vaza
+  pra lá). Sem overflow novo em nenhuma seção da página, zero erros de
+  console.
+
+- **4 ajustes estruturais de mobile num só turno (2026-08-22)**:
+  1. **CTA de "Como funciona" movido pra depois dos cards** — antes ficava
+     entre o heading e os 3 cards. Como o botão era filho de
+     `.how-it-works__intro` (irmão diferente de `.how-it-works__card-col`
+     no grid), reordenar exigiu extrair o `<a>` pra ser item PRÓPRIO do
+     grid (`.how-it-works__layout`), usando `grid-template-areas`:
+     desktop mantém `"intro cards" / "cta cards"` (botão embaixo do
+     heading, cards ocupando a coluna toda via span); mobile (≤991px)
+     virou `"intro" / "cards" / "cta"` (botão por último). Botão ganhou
+     `data-reveal` próprio (antes vinha de graça do wrapper `.intro`).
+  2. **Espaço entre sessões = 80px no mobile** — `.section` (classe
+     compartilhada por quase toda sessão) tinha `padding-top/bottom:
+     64px` cada (≤767px); baixado pra `40px` cada (soma 80px entre duas
+     sessões `.section` adjacentes — paddings não colapsam). 40px não
+     bate com token nenhum da escala, usado direto de propósito. Hero e
+     CTA final (`.full-width-feature`) não usam `.section`, ficam fora
+     dessa conta (documentado no comentário do CSS). **Achado na
+     verificação, não corrigido**: a transição Problema→Soluções tem
+     ~184px em vez de 80px, por causa de um `.section-divider`
+     decorativo (linha-ponto-linha) que só existe entre essas duas
+     sessões — 104px de altura própria dele + 80px do padding = 184px,
+     matematicamente consistente, só não é "80px limpo" ali por causa
+     desse elemento extra. Não mexi nele (não foi pedido, e é decorativo
+     — avisar o usuário antes de qualquer ajuste).
+  3. **"Planilha vs Pruxor" sem alternar planilha/pruxor no mobile** —
+     antes cada uma das 7 linhas empilhava seu próprio before+after,
+     então a rolagem mostrava planilha→pruxor 7 vezes seguidas. Como o
+     par vivia dentro de UMA `.compare__row` (dona da borda arredondada
+     da linha), não dava só pra reordenar — `.compare__row` virou
+     `display: contents` no mobile (some da árvore de caixas, filhos
+     passam a ser flex-items diretos de `.compare__rows`), e
+     `order: 1`/`order: 2` em `--before`/`--after` agrupa os 7 primeiros
+     e os 7 últimos (ordem relativa dentro de cada grupo preservada).
+     Cada célula ganhou a própria borda+cantos (antes só a linha inteira
+     tinha isso) pra continuar lendo como item de lista sozinha.
+  4. **Depoimentos virou lista horizontal simples, sem loop nem fade** —
+     antes era um carrossel CSS puro em loop automático (`animation:
+     testimonials-scroll 42s infinite`) com 5 cards reais + 5 duplicados
+     (`aria-hidden`) pra loop sem salto, e fade nas bordas
+     (`mask-image`). No mobile: animação removida, `mask-image: none`,
+     os 5 cards duplicados escondidos (`display:none`, já que sem loop
+     eles só apareceriam como repetição no fim da lista), e
+     `overflow-x` de `hidden` pra `auto` (+ `-webkit-overflow-scrolling:
+     touch`) — vira uma lista horizontal de verdade, arrastável com o
+     dedo, sem nenhum efeito de carrossel.
+  Validado via Playwright em 414px, medição extensa (posições Y/X,
+  `getComputedStyle`, simulação de scroll horizontal): os 4 itens
+  passaram sem ressalva real, zero overflow novo em toda a página, zero
+  erros de console, e confirmado que NENHUMA das 4 mudanças vazou pro
+  desktop (1440px segue com o CTA ao lado dos cards, padding de sessão
+  original, planilha/pruxor pareados lado a lado, depoimentos com loop +
+  fade intactos).
+
+- **Mais 4 ajustes mobile num turno (2026-08-22/23), continuação da
+  rodada anterior**:
+  1. **Divisória entre as duas listas de "Planilha vs Pruxor"** — depois
+     de agrupar (rodada anterior) as 7 frases "planilha" seguidas das 7
+     "pruxor", sem NADA sinalizando onde uma lista acaba e a outra
+     começa. Usuário pediu uma divisória. Adicionado
+     `.compare__group-divider` (linha — círculo "VS" reaproveitando
+     `.compare__vs` — linha), elemento novo no HTML com `order: 2` (entre
+     `--before` order:1 e `--after`, que subiu de order:2 pra order:3 pra
+     abrir espaço). `display:none` por padrão, só existe visualmente em
+     ≤767px.
+  2. **"O problema" também centralizado no mobile** — tinha ficado de
+     fora da 1ª leva de sessões centralizadas (Soluções/Como
+     funciona/Planilha vs Pruxor/Diferenciais/FAQ); usuário pediu
+     explicitamente estender pra ela também. `.problem__header {
+     text-align: center }` em ≤767px.
+  3. **Headings de 3 dos 5 módulos de "Soluções" com quebra manual** —
+     `text-wrap: balance` sozinho estava deixando a 1ª linha BEM menor
+     que a 2ª (ex: "Controle" / "financeiro por obra"); usuário pediu o
+     oposto, 1ª linha maior. Sem forma confiável de forçar isso só com
+     CSS de wrap automático, usei `<br class="feature-set__heading-break">`
+     manual nos 3 headings que realmente quebram em 2 linhas no mobile
+     (Financeiro: "Controle financeiro" / "por obra"; Diário de obra:
+     "Diário de obra" / "profissional"; Orçamento SINAPI: "Orçamento com
+     a" / "tabela SINAPI") — `display:none` por padrão (não quebra nada
+     em desktop/tablet), só vira `<br>` de verdade em ≤767px. Os outros 2
+     headings ("Gestão de obras", "Controle de estoque") já cabiam numa
+     linha só no mobile — confirmado via Playwright, nenhuma mudança
+     neles. Validado: as 3 quebras manuais resultam em linha 1
+     visivelmente mais larga que a linha 2 nos 3 módulos, exatamente como
+     pedido.
+  4. **Depoimentos: scroll vertical, não horizontal** — correção da
+     rodada anterior (onde eu tinha implementado como lista horizontal
+     arrastável, `overflow-x:auto`). Usuário viu o resultado (1 card só
+     visível, tinha que arrastar pro lado pra ver os próximos) e pediu
+     scroll vertical de verdade. `.testimonials__track` virou
+     `flex-direction: column`, `.testimonial-card` virou `width: 100%;
+     flex: none;`, `.testimonials__loop` virou `overflow: visible` (sem
+     mais container de scroll horizontal) — os 5 cards reais empilham
+     como qualquer outra fileira de cards do site, revelados pelo scroll
+     normal da página.
+     - **Bug real encontrado e corrigido na verificação**: sobrava uma
+       regra `@media (max-width:767px) { .testimonial-card { flex-basis:
+       min(85vw, 340px); } }` de uma fase anterior (quando a seção ainda
+       era horizontal e essa regra controlava LARGURA do card). Com
+       `flex-direction: column`, `flex-basis` passou a controlar ALTURA
+       — forçava todo card a 340px fixos, cortando o padding inferior de
+       2 dos 5 cards (os com texto de 3 linhas, ~7px de padding restante
+       em vez de 32px, sem cortar texto/avatar mas com espaçamento
+       visivelmente inconsistente entre cards). Regra removida por
+       completo (não fazia mais sentido nenhum no layout novo) —
+       confirmado que os 5 cards agora têm `scrollHeight` ≈
+       `boundingHeight` (sem clipping) em todos.
+  Validado via Playwright em 414px: os 4 itens conferidos em detalhe
+  (posições, texto por linha, computed style), zero overflow novo, zero
+  erros de console, nenhuma das mudanças vazou pro desktop (1440px
+  continua com linhas pareadas lado a lado no compare, Problema
+  esquerda-alinhado, headings sem quebra manual, depoimentos com loop
+  horizontal + fade intactos).
+
+- **Cabeçalho de "Planilha vs Pruxor" reorganizado no mobile + bug real
+  achado e corrigido no grid de Planos (2026-08-23)**:
+  1. **"Na planilha" sozinho no header, "Pruxor" mudou de lugar** —
+     usuário mandou 2 prints apontando que o "VS" não devia dividir
+     espaço com "Na planilha" (queria só o texto, centralizado), e que a
+     divisória entre as duas listas (adicionada na rodada anterior)
+     devia ganhar o rótulo "Pruxor" também. Implementado: `.compare__vs`
+     escondido dentro de `.compare__header` só no mobile (o badge "VS" do
+     cabeçalho desktop continua intacto); `.compare__group-divider`
+     ganhou uma 2ª linha com `.compare__header-label--brand` (mesmo
+     ícone+texto "Pruxor" do cabeçalho, reaproveitado) embaixo do traço
+     — a divisória agora funciona como um mini-cabeçalho introduzindo a
+     lista que vem a seguir, do mesmo jeito que "Na planilha" introduz a
+     lista do topo. Validado via Playwright: header mobile mostra só
+     "Na planilha" / "Pruxor" empilhados e centralizados, divisória
+     mostra linha-VS-linha + "Pruxor" exatamente entre as duas listas,
+     desktop (1440px) confirmado intocado.
+  2. **Bug real: grid de 4 colunas dos Planos estourava a página entre
+     ~992-1259px de viewport** (usuário reportou com print do DevTools
+     no iPad Pro, 1024×1366, "acabou quebrando"). Causa: `.pricing-card__cta`
+     usa `.btn`, que tem `white-space: nowrap` — o texto "Começar teste
+     grátis" sem quebra trava a largura mínima de cada card em ~249px;
+     4 cards + gaps somam ~1068px mínimos, mas o `.layout-container` só
+     atinge essa largura a partir de ~1260px de viewport (breakpoint
+     antigo de 2 colunas era só ≤991px, deixando uma "zona morta" de
+     ~268px de viewport sem cobertura, onde a 4ª coluna ("Pruxor Elite")
+     estourava a largura real da página, não só cortava visualmente).
+     Mesmo padrão de bug já visto antes em `.about-outcomes` (fixado com
+     breakpoint tweener em 1240px) — aqui o breakpoint de 2 colunas do
+     `.pricing-grid` subiu de `991px` pra `1260px`, calculado pra fechar
+     a zona morta por completo. Validado via Playwright em
+     1024/1100/1260/1280/1440px: 2 colunas até 1260px inclusive, 4
+     colunas a partir de 1280px, zero overflow em qualquer um, todos os
+     4 cards sempre visíveis por completo.
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das
@@ -2673,12 +2997,12 @@ Pendências reais que restam: imagens reais do produto (hoje sem nenhuma
 imagem, só SVG inline), conectar formulário/botões de assinatura a
 serviços reais (links de checkout Greenn já coletados pros planos
 mensais Starter/Pro/Elite, mas ainda não aplicados aos cards por decisão
-explícita do usuário — ver bullet "MAPA DE LINKS"), e o bug pré-existente
-do botão de hambúrguer/CTA do header estourando a tela em viewports muito
-estreitos (~390-410px, confirmado ainda presente na verificação desta
-rodada, sem relação com nenhum trabalho recente). Próximo passo mais
-provável: aguardar novo pedido do usuário (próxima seção de copy oficial,
-ou outro ajuste).
+explícita do usuário — ver bullet "MAPA DE LINKS"). **O bug antigo do
+hambúrguer/CTA do header estourando a tela em viewports estreitos foi
+CORRIGIDO em 2026-08-22** (ver "Ajustes mobile" no fim da seção
+"Decisões") — não é mais pendência. Próximo passo mais provável:
+aguardar novo pedido do usuário (próxima seção de copy oficial, ou outro
+ajuste).
 
 ---
 

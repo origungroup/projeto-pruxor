@@ -119,7 +119,19 @@ svg { display: block; }
 .section { padding-top: var(--space-3xl); padding-bottom: var(--space-3xl); }
 .section--tight { padding-top: var(--space-2xl); padding-bottom: var(--space-2xl); }
 @media screen and (max-width: 767px) {
-  .section { padding-top: var(--space-xl); padding-bottom: var(--space-xl); }
+  /* 40px em cada lado (não colapsa — são paddings, não margins) soma
+     exatamente 80px de espaço visível entre duas sessões `.section`
+     adjacentes, pedido explícito do usuário ("o espaço de uma sessão
+     pra outra deve ser de 80px apenas"). 40px não bate com nenhum token
+     da escala (--space-m=32px, --space-l=48px) — valor direto aqui de
+     propósito, não é engano. Cobre a maioria das transições do site
+     (Sobre↔Problema↔Soluções↔Como funciona↔Planilha vs Pruxor↔
+     Diferenciais↔Depoimentos↔Planos↔FAQ, todas `.section`); a hero (que
+     tem padding próprio, não usa `.section`) e o CTA final
+     (`.full-width-feature`, também sem `.section` — o padding dele é
+     do CARD em si, ajustado à parte numa rodada anterior) ficam de fora
+     dessa conta específica. */
+  .section { padding-top: 40px; padding-bottom: 40px; }
 }
 
 .badge {
@@ -157,6 +169,26 @@ svg { display: block; }
 .section-header--center { align-items: center; text-align: center; margin-left: auto; margin-right: auto; }
 .section-header__heading { font-size: var(--text-3xl); font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; text-wrap: balance; }
 .section-header__paragraph { font-size: var(--text-md); color: var(--text-secondary); text-wrap: balance; }
+/* Fonte um pouco menor + linhas mais próximas no mobile (pedido explícito
+   do usuário, rodada de ajustes mobile de 2026-08-22, olhando a sessão
+   "Problema") — `.section-header__heading` é COMPARTILHADA por praticamente
+   toda sessão do site (Problema, Como funciona, Planilha vs Pruxor,
+   Diferenciais, Depoimentos, Planos, FAQ etc.), então o pedido explícito
+   do usuário de propagar o ajuste "pra todas as sessões que usam essa
+   mesma fonte" já é satisfeito de graça por editar a classe compartilhada
+   aqui, em vez de uma classe específica da sessão "Problema"
+   (`.problem__header`, que só controla margin-bottom). `--text-2xl`
+   (32px, um degrau abaixo do `--text-3xl` de 40px) segue o mesmo padrão já
+   usado pro `<h1>` da hero no mobile (ver regra de `.hero__heading` em
+   ≤767px) — mesma lógica de "um degrau menor no mobile", agora estendida
+   pra esse heading compartilhado. `line-height` de 1.15 pra 1.1 (mais
+   apertado, mas não tanto quanto o 1.05 da hero — esse heading aqui
+   frequentemente quebra em 3 linhas de frase corrida, não só 2-3 palavras
+   curtas, então um pouco mais de respiro entre linhas evita que
+   ascendentes/descendentes de linhas adjacentes quase se toquem). */
+@media screen and (max-width: 767px) {
+  .section-header__heading { font-size: var(--text-2xl); line-height: 1.1; }
+}
 
 /* Destaque de trecho dentro de um heading (mesmo padrão do site de
    referência: um <span> extra dentro do próprio h1/h2). Duas variantes
@@ -334,7 +366,17 @@ body.nav-mobile-open { overflow: hidden; }
 
 @media screen and (max-width: 991px) {
   .nav__list:not(.nav__list--mobile) { display: none; }
-  .nav__actions .btn--secondary { display: none; }
+  /* Bug real: só `.btn--secondary` ("Entrar") escondia — `.btn--primary`
+     ("Solicitar demonstração") continuava visível na barra ao lado do
+     hambúrguer, e a largura combinada de logo + botão + hambúrguer
+     estourava a tela em telas estreitas (ex: iPhone XR, 414px),
+     empurrando o hambúrguer pra fora e causando scroll horizontal na
+     página inteira. Nesta faixa, o header deve mostrar só logo +
+     hambúrguer — as duas ações (Entrar/Solicitar demonstração) já
+     existem dentro do overlay mobile (`.nav__actions--mobile`, seletor
+     diferente, não afetado por esta regra). */
+  .nav__actions .btn--secondary,
+  .nav__actions .btn--primary { display: none; }
   .nav__hamburger-button { display: inline-flex; }
 }
 
@@ -439,7 +481,24 @@ body.nav-mobile-open { overflow: hidden; }
 }
 
 @media screen and (max-width: 767px) {
-  .hero { padding-top: calc(var(--space-l) + var(--nav-height)); padding-bottom: var(--space-l); }
+  /* Hero ocupando 80% da altura da viewport no mobile (pedido explícito
+     do usuário, rodada de ajustes mobile de 2026-08-22) — `min-height`
+     (não `height`) pra garantir que ela cresça além de 80vh se o
+     conteúdo algum dia precisar de mais espaço, em vez de cortar/gerar
+     overflow. `display:flex` + `justify-content:center` centralizam
+     `.hero__grid` (único filho em fluxo normal — `.hero__texture`/
+     `.hero__spotlight` são `position:absolute`, não entram no cálculo)
+     verticalmente dentro desse espaço, já descontando o padding (o
+     projeto usa `box-sizing:border-box` global) — sem isso, sobraria um
+     vão vazio embaixo do conteúdo em vez de centralizar. */
+  .hero {
+    padding-top: calc(var(--space-l) + var(--nav-height));
+    padding-bottom: var(--space-l);
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
   .hero__heading { font-size: var(--text-2xl); }
 }
 
@@ -447,6 +506,13 @@ body.nav-mobile-open { overflow: hidden; }
    PROBLEM / CARDS GRID
    ========================================================================== */
 .problem__header { margin-bottom: var(--space-l); }
+/* Headline + subheadline centralizados no mobile — pedido explícito do
+   usuário, extensão do mesmo tratamento já aplicado em Soluções/Como
+   funciona/Planilha vs Pruxor/Diferenciais/FAQ (ficou de fora daquela
+   primeira rodada, pedido separado depois). */
+@media screen and (max-width: 767px) {
+  .problem__header { text-align: center; }
+}
 .problem__cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm); }
 .problem__closing { max-width: 640px; margin: var(--space-l) auto 0; text-align: center; }
 .problem__closing-text { font-size: var(--text-md); color: var(--text-secondary); margin-bottom: var(--space-sm); text-wrap: balance; }
@@ -730,11 +796,64 @@ body.nav-mobile-open { overflow: hidden; }
    grid de 2 colunas deixaria o 3º item sozinho numa linha desalinhada,
    então virou empilhamento vertical simples (funciona bem pra qualquer
    quantidade de stats, não só 3 ou 4). */
+/* Rodada de ajustes mobile (2026-08-22), 4 pedidos explícitos do usuário
+   pra essa seção — todos escopados aqui em ≤767px:
+   1) globo de volta a `position: absolute` (a regra de ≤991px acima o
+      tinha posto em fluxo normal, `position: relative`, empurrando todo
+      o conteúdo pra baixo dele) — assim ele volta a ficar POR TRÁS do
+      conteúdo (`.about-outcomes__content` já tem `z-index: 1`, contra
+      `z-index: 0` do globo) em vez de ocupar um espaço próprio antes do
+      badge/heading.
+   2) `height: 80%` (não mais `width: X%`) faz o CÍRCULO INTEIRO do globo
+      ter 80% da ALTURA do card — como o card (`.about-outcomes`,
+      `position: relative`) tem `height: auto` baseada no conteúdo, a %
+      de altura num filho `position: absolute` resolve contra a altura
+      final já calculada do conteúdo (comportamento padrão da spec pra
+      elementos absolutos, não precisa de altura fixa no pai).
+      `aspect-ratio: 1` (herdado da regra base) deriva a largura a partir
+      dessa altura — por isso `width`/`max-width` da regra base precisam
+      ser resetados aqui. **2ª rodada (mesmo dia)**: usuário pediu que só
+      METADE do globo aparecesse, e que essa metade continuasse ocupando
+      os mesmos 40% do card de antes — ou seja, o círculo INTEIRO dobra
+      de 40% pra 80% da altura, mas metade dele fica escondida (cortada
+      pelo `overflow: hidden` do card). `bottom: 0` sozinho deixaria o
+      círculo inteiro (os 80%) visível; o `translateY(50%)` no
+      `transform` desloca a caixa pra baixo em 50% da PRÓPRIA altura (não
+      do container) — resultado: o centro do círculo passa a coincidir
+      exatamente com a borda inferior do card, então só a metade de cima
+      (um semicírculo, altura = metade de 80% = 40% do card, batendo com
+      o pedido) fica acima da borda e visível; a metade de baixo fica
+      abaixo da borda, cortada. `left: 50%` continua fazendo a
+      centralização horizontal (agora combinado com o translateY no
+      mesmo `transform`, via `translate(-50%, 50%)`).
+   3) Padding do card: `var(--space-l) var(--space-2xs)` = exatamente
+      48px/12px pedidos (tokens batem certinho com os valores, não
+      precisou hardcodear px solto).
+   4) Conteúdo centralizado (`text-align: center` + `margin-inline: auto`
+      no parágrafo, que tem `max-width` próprio e por isso precisa de
+      margin automática pra centralizar a CAIXA, não só o texto dentro
+      dela) e `line-height` do heading reduzido (1.55 herdado do body,
+      solto demais pra um heading de 4 linhas — outros headings do site
+      já usam ~1.05-1.15, aqui ficou de fora por descuido; corrigido só
+      no mobile por ora, já que não foi pedido pro desktop). */
 @media screen and (max-width: 767px) {
-  .about-outcomes__stats { flex-direction: column; align-items: flex-start; gap: var(--space-sm); }
-}
-@media screen and (max-width: 479px) {
-  .about-outcomes__globe { width: 78%; }
+  .about-outcomes { padding: var(--space-l) var(--space-2xs); }
+  .about-outcomes__content { text-align: center; }
+  .about-outcomes__heading { line-height: 1.15; }
+  .about-outcomes__paragraph { margin-left: auto; margin-right: auto; }
+  .about-outcomes__stats { flex-direction: column; align-items: center; gap: var(--space-sm); }
+  .about-outcomes__globe {
+    position: absolute;
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    width: auto;
+    max-width: none;
+    height: 80%;
+    margin: 0;
+  }
 }
 
 /* ==========================================================================
@@ -868,6 +987,16 @@ body.nav-mobile-open { overflow: hidden; }
 
 .feature-set__heading { font-size: var(--text-2xl); font-weight: 500; margin-bottom: var(--space-sm); text-wrap: balance; }
 .feature-set__paragraph { color: var(--text-secondary); font-size: var(--text-sm); max-width: 52ch; margin-bottom: var(--space-sm); text-wrap: balance; }
+/* Quebra manual só nos 3 headings mais longos (financeiro, diário de
+   obra, orçamento SINAPI — os outros 2, "Gestão de obras" e "Controle de
+   estoque", já cabem numa linha só no mobile, sem precisar de nada). Sem
+   isso, `text-wrap: balance` sozinho estava produzindo uma 1ª linha
+   BEM menor que a 2ª (ex: "Controle" / "financeiro por obra") — o
+   usuário pediu o oposto, 1ª linha maior. `display:none` por padrão (o
+   `<br>` não quebra nada em desktop/tablet, onde o layout é diferente e
+   esse ponto de quebra específico não foi pedido nem testado) — só vira
+   um `<br>` de verdade em ≤767px (ver bloco abaixo). */
+.feature-set__heading-break { display: none; }
 
 /* Mobile: sem "etapas presas" — os 5 blocos de texto (não só o ativo)
    empilham normalmente. Diferente da versão com 2 etapas genéricas, os 5
@@ -909,6 +1038,35 @@ body.nav-mobile-open { overflow: hidden; }
     pointer-events: auto !important;
   }
 }
+/* Linhas mais próximas no heading/parágrafo de cada módulo, no mobile
+   (pedido explícito do usuário, rodada de ajustes mobile de 2026-08-22)
+   — nenhum dos dois tinha `line-height` próprio, então herdavam o 1.55
+   solto do body. `.feature-set__heading`/`__paragraph` são
+   COMPARTILHADOS pelos 5 módulos (financeiro, diário de obra, orçamento
+   SINAPI, gestão de obras, estoque) — o pedido do usuário de propagar
+   "pra todos que seguem essa fonte" já é satisfeito de graça editando a
+   classe compartilhada aqui. Heading em 1.15 (mesmo padrão já usado nos
+   outros headings do site — hero 1.05, section-header 1.1-1.15,
+   about-outcomes 1.15); parágrafo em 1.4 (menos apertado que um heading,
+   texto corrido ainda precisa de respiro pra legibilidade, mas visivelmente
+   mais compacto que o 1.55 padrão). `.feature-showcase__header` (eyebrow +
+   heading + parágrafo, já empilhados desde ≤991px) centralizado no
+   mobile — pedido explícito do usuário, junto com o mesmo tratamento em
+   Como funciona/Planilha vs Pruxor/Diferenciais/FAQ (ver bullets
+   correspondentes nas próprias sessões). */
+@media screen and (max-width: 767px) {
+  .feature-set__heading { line-height: 1.15; }
+  .feature-set__paragraph { line-height: 1.4; }
+  .feature-set__heading-break { display: inline; }
+  .feature-showcase__header { text-align: center; }
+  /* `.feature-showcase__header-paragraph` tem `text-align: left` explícito
+     na regra base (desktop, layout space-between com o parágrafo à
+     direita) — texto explícito no próprio elemento sempre vence herança,
+     então o `text-align: center` do pai acima não bastava sozinho pra
+     centralizar esse parágrafo especificamente (bug real, achado na
+     verificação). */
+  .feature-showcase__header-paragraph { text-align: center; }
+}
 
 /* ==========================================================================
    COMO FUNCIONA — sessão nova (copy oficial, 2026-08-22). 3ª versão de
@@ -925,17 +1083,40 @@ body.nav-mobile-open { overflow: hidden; }
    saiu do JS (ver memoria.md). Zero mecanismo de scroll customizado
    agora — só `position: sticky` no heading, puro CSS.
    ========================================================================== */
-.how-it-works__layout { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); align-items: start; }
+/* `grid-template-areas` (não só 2 colunas com 2 filhos) porque o CTA
+   (`.how-it-works__cta`) é um item PRÓPRIO do grid agora, não mais filho
+   de `.how-it-works__intro` — precisa disso pra poder reordenar ele pra
+   DEPOIS dos cards no mobile (ver ≤991px abaixo) sem duplicar HTML nem
+   mexer no DOM por breakpoint. No desktop, "cta" ocupa a 2ª linha da
+   coluna 1 (embaixo do heading) e "cards" ocupa as 2 linhas inteiras da
+   coluna 2 (span natural cobre o gap entre as linhas, sem "buraco"
+   visual no meio dos cards). */
+.how-it-works__layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "intro cards"
+    "cta   cards";
+  column-gap: var(--space-xl);
+  row-gap: var(--space-sm);
+  align-items: start;
+}
 /* `position: sticky` simples — SEM JS, sem trilho alto, sem crossfade.
    O heading fica parado enquanto a coluna da direita (mais alta, 3 cards
    empilhados em fluxo normal) rola por baixo dele, exatamente como
    qualquer sidebar sticky ao lado de uma lista mais alta. `top` usa só
    `--nav-height`, igual a todo outro elemento sticky do site
    (`.feature-showcase__stage`). */
-.how-it-works__intro { position: sticky; top: var(--nav-height); max-width: 30rem; padding: var(--space-m) 0; }
-.how-it-works__cta { margin-top: var(--space-sm); }
+.how-it-works__intro { grid-area: intro; position: sticky; top: var(--nav-height); max-width: 30rem; padding-top: var(--space-m); }
+/* `justify-self: start` replica o alinhamento à esquerda que o botão já
+   tinha antes (quando era filho de `.how-it-works__intro`, um bloco sem
+   `text-align:center`) — sem isso, um item de grid sem largura própria
+   estica pra ocupar a coluna inteira por padrão (`justify-items: normal`
+   ~ stretch), o que deixaria o botão esticado feio em vez do formato
+   pílula compacto de sempre. */
+.how-it-works__cta { grid-area: cta; justify-self: start; }
 
-.how-it-works__card-col { display: flex; flex-direction: column; gap: var(--space-l); }
+.how-it-works__card-col { grid-area: cards; display: flex; flex-direction: column; gap: var(--space-l); }
 /* Ícone à esquerda + tag "Etapa N" à direita, na mesma linha — pedido
    explícito com base no print de referência (layout do topo do card). */
 .how-it-works__card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--space-xs); }
@@ -958,9 +1139,30 @@ body.nav-mobile-open { overflow: hidden; }
   overflow: hidden;
 }
 
+/* Empilhado (≤991px): pedido explícito do usuário pra mover o botão pra
+   DEPOIS dos cards (antes ficava logo abaixo do heading, antes deles) —
+   só reordena a `grid-template-areas` (intro → cards → cta), sem
+   duplicar HTML nem precisar de JS. */
 @media screen and (max-width: 991px) {
-  .how-it-works__layout { grid-template-columns: 1fr; gap: var(--space-l); }
+  .how-it-works__layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "intro"
+      "cards"
+      "cta";
+    gap: var(--space-l);
+  }
   .how-it-works__intro { position: static; max-width: none; padding: 0; }
+}
+/* Headline centralizado no mobile — pedido explícito do usuário, mesmo
+   tratamento aplicado em Soluções/Planilha vs Pruxor/Diferenciais/FAQ.
+   O CTA (`.how-it-works__cta`) não é mais filho de `.how-it-works__intro`
+   (virou item próprio do grid, ver bloco acima) — `text-align:center` no
+   intro não alcança ele mais, por isso ganhou centralização própria via
+   `justify-self`. */
+@media screen and (max-width: 767px) {
+  .how-it-works__intro { text-align: center; }
+  .how-it-works__cta { justify-self: center; }
 }
 
 /* ==========================================================================
@@ -1063,6 +1265,10 @@ body.nav-mobile-open { overflow: hidden; }
 .compare__cell--after { display: flex; align-items: center; gap: var(--space-2xs); font-weight: 500; }
 .compare__icon { width: 18px; height: 18px; flex: none; color: var(--color-brand); }
 .compare__divider { justify-self: center; width: 2px; align-self: stretch; margin: var(--space-2xs) 0; background: var(--color-brand); }
+/* Só existe visualmente no mobile (≤767px, ver media query mais abaixo)
+   — no desktop cada `.compare__row` já mostra o par antes/depois lado a
+   lado, então não há duas "listas" separadas pra dividir. */
+.compare__group-divider { display: none; }
 .compare__closing { margin-top: var(--space-l); }
 /* O botão fica visualmente "puxado" pra direita se só centralizar no
    container inteiro — o grid 1fr/48px/1.15fr do header/linhas já não é
@@ -1086,13 +1292,76 @@ body.nav-mobile-open { overflow: hidden; }
 .compare__closing-btn { grid-column: 2; justify-self: center; white-space: nowrap; }
 
 @media screen and (max-width: 767px) {
+  /* Headline + subheadline centralizados — pedido explícito do usuário,
+     mesmo tratamento aplicado em Soluções/Como funciona/Diferenciais/FAQ. */
+  .compare__intro { text-align: center; }
   .compare { padding: var(--space-m); }
-  .compare__header { grid-template-columns: 1fr auto; }
-  .compare__header-label--brand { grid-column: 1 / -1; }
-  .compare__vs { width: 32px; height: 32px; }
-  .compare__row { grid-template-columns: 1fr; }
+  /* "Na planilha" sozinho, centralizado, sem o "VS" na mesma linha —
+     pedido explícito do usuário com print. O "VS" saiu do cabeçalho e
+     foi morar na divisória entre as duas listas (ver
+     `.compare__group-divider` mais abaixo), onde ele já tem mais sentido
+     agora que a lista virou "planilha inteira, depois pruxor inteira"
+     em vez de pareada linha a linha. `.compare__header-label--brand`
+     ("Pruxor", a 2ª linha do cabeçalho) já era `justify-content:center`
+     desde sempre — sem o "VS" dividindo espaço, o grid vira 1 coluna só
+     e as duas linhas (Na planilha / Pruxor) ficam simplesmente
+     empilhadas e centralizadas. */
+  .compare__header { grid-template-columns: 1fr; }
+  .compare__header .compare__vs { display: none; }
+  /* Pedido explícito do usuário: mostrar a lista inteira "Na planilha"
+     primeiro, depois a lista inteira "Pruxor" — sem alternar entre as
+     duas a cada linha (era o que acontecia antes: cada `.compare__row`
+     empilhava seu próprio before+after, então rolar a página mostrava
+     planilha→pruxor→planilha→pruxor repetidamente). Como cada par
+     before/after vive dentro de UMA `.compare__row` (a borda arredondada
+     de "linha" pareada é dela, não das células), não dá pra só reordenar
+     — a linha (`.compare__row`) vira `display: contents` (some da árvore
+     de caixas, mas os filhos continuam no DOM/acessibilidade) pra que as
+     14 células (7 before + 7 after) passem a ser filhas DIRETAS de
+     `.compare__rows` (que já é `display:flex; flex-direction:column`) e
+     o `order` funcione entre elas. `order: 1` em todo `--before` e
+     `order: 3` em todo `--after` (a divisória fica no meio, order: 2)
+     agrupa as 7 primeiras, depois as 7 últimas — dentro de cada grupo, a
+     ordem relativa original (linha 1 a 7) se mantém, já que `order`
+     empatado cai de volta pra ordem de origem. Cada célula ganha a
+     própria borda/cantos arredondados (antes era só a `.compare__row`
+     que tinha isso, cobrindo o par inteiro) pra continuar lendo como um
+     item de lista, agora sozinha. */
+  .compare__row { display: contents; }
   .compare__divider { display: none; }
-  .compare__cell--before { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+  .compare__cell {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+  }
+  .compare__cell--before { order: 1; }
+  .compare__cell--after { order: 3; }
+  /* Divisória entre a lista "Na planilha" (order:1) e a lista "Pruxor"
+     (order:3) — pedido explícito do usuário, olhando o resultado da
+     rodada anterior: sem nenhuma linha/rótulo entre as duas listas,
+     ficava difícil perceber onde uma acaba e a outra começa (o cabeçalho
+     "Na planilha / VS / Pruxor" no topo do card já não é suficiente
+     depois de rolar 7 itens). 2ª rodada: o "VS" saiu do cabeçalho (ver
+     `.compare__header` acima) e o rótulo "Pruxor" (mesmo
+     `.compare__header-label--brand`, ícone+texto, reaproveitado sem
+     duplicar CSS) veio morar aqui embaixo do traço — agora esta
+     divisória sozinha anuncia "acabou a lista da planilha, começa a da
+     Pruxor", igual ao "Na planilha" faz lá em cima pra lista de cima.
+     `aria-hidden` porque é só reforço visual — o cabeçalho já anuncia a
+     comparação pra leitor de tela. Escondido por padrão (só existe
+     visualmente aqui, ≤767px); no desktop cada linha já é seu próprio
+     par visível lado a lado, então não faz sentido lá. */
+  .compare__group-divider {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2xs);
+    margin: var(--space-2xs) 0;
+  }
+  .compare__group-divider-vs { display: flex; align-items: center; gap: var(--space-xs); width: 100%; }
+  .compare__group-divider-line { flex: 1; height: 1px; background: rgba(255, 255, 255, 0.16); }
+  .compare__group-divider .compare__vs { flex: none; width: 32px; height: 32px; }
   /* Sem o "VS" nem a divisão em 2 colunas nesse breakpoint (tudo já
      empilha), não sobra nenhuma assimetria pra compensar — o botão volta
      a ser um centralizado simples. */
@@ -1110,6 +1379,12 @@ body.nav-mobile-open { overflow: hidden; }
 .value-props__cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm); }
 @media screen and (max-width: 991px) {
   .value-props__cards { grid-template-columns: repeat(2, 1fr); }
+}
+@media screen and (max-width: 767px) {
+  /* Headline + subheadline centralizados — pedido explícito do usuário,
+     mesmo tratamento aplicado em Soluções/Como funciona/Planilha vs
+     Pruxor/FAQ. */
+  .value-props__header { text-align: center; }
 }
 @media screen and (max-width: 479px) {
   .value-props__cards { grid-template-columns: 1fr; }
@@ -1164,6 +1439,34 @@ body.nav-mobile-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .testimonials__track { animation: none; }
 }
+/* Pedido explícito do usuário: sem o loop automático nem o fade no
+   mobile, e o scroll tem que ser VERTICAL — não horizontal. 1ª tentativa
+   (mesma rodada) tinha deixado uma lista horizontal arrastável
+   (`overflow-x: auto`, cards com largura fixa); usuário viu o resultado
+   e pediu pra trocar pra rolagem vertical normal da página, cards
+   empilhados um embaixo do outro em largura total, igual a qualquer
+   outra fileira de cards do site (Problema, Diferenciais, Como
+   funciona) quando empilha no mobile. `flex-direction: column` na
+   faixa + `width: 100%` nos cards faz isso sem precisar de nenhum
+   scroll container próprio — a seção some do fluxo horizontal e volta a
+   fazer parte do scroll normal da página. A 2ª cópia dos cards
+   (`aria-hidden="true"`, existia só pra dar a ilusão de loop contínuo
+   sem salto) precisa sumir — sem a animação, ela só apareceria como 5
+   cards repetidos no fim da lista. */
+@media screen and (max-width: 767px) {
+  .testimonials__loop {
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .testimonials__track {
+    flex-direction: column;
+    width: auto;
+    animation: none;
+  }
+  .testimonial-card { flex: none; width: 100%; }
+  .testimonial-card[aria-hidden="true"] { display: none; }
+}
 
 .testimonial-card {
   flex: 0 0 380px;
@@ -1196,10 +1499,6 @@ body.nav-mobile-open { overflow: hidden; }
 .testimonial-card__meta { display: flex; flex-direction: column; gap: 0.1em; }
 .testimonial-card__name { font-size: var(--text-xs); font-weight: 600; }
 .testimonial-card__role { font-family: var(--font-secondary); font-size: var(--text-2xs); color: rgba(247, 247, 255, 0.55); }
-
-@media screen and (max-width: 767px) {
-  .testimonial-card { flex-basis: min(85vw, 340px); }
-}
 
 /* ==========================================================================
    FULL WIDTH FEATURE (inverse band)
@@ -1259,6 +1558,16 @@ body.nav-mobile-open { overflow: hidden; }
 .full-width-feature__microcopy { font-family: var(--font-secondary); font-size: var(--text-2xs); color: rgba(247, 247, 255, 0.6); }
 .full-width-feature__secondary-cta { font-family: var(--font-secondary); font-size: var(--text-sm); color: rgba(247, 247, 255, 0.75); text-decoration: underline; text-underline-offset: 3px; }
 .full-width-feature__secondary-cta:hover { color: var(--text-inverse); }
+/* Mesmos 2 ajustes já feitos em `.about-outcomes` (seção "Sobre a
+   Pruxor") aplicados aqui, pedido explícito do usuário comparando as
+   duas sessões escuras: padding igual (`var(--space-l) var(--space-2xs)`
+   = 48px/12px) e heading com `line-height` mais apertado (1.15, mesmo
+   valor — o heading aqui também não tinha `line-height` próprio, herdava
+   o 1.55 solto do body). */
+@media screen and (max-width: 767px) {
+  .full-width-feature { padding: var(--space-l) var(--space-2xs); }
+  .full-width-feature__heading { line-height: 1.15; }
+}
 
 /* ==========================================================================
    FAQ ACCORDION
@@ -1292,6 +1601,12 @@ body.nav-mobile-open { overflow: hidden; }
 
 @media screen and (max-width: 767px) {
   .faqs__grid { grid-template-columns: 1fr; }
+  /* Headline + subheadline centralizados — pedido explícito do usuário,
+     mesmo tratamento aplicado em Soluções/Como funciona/Planilha vs
+     Pruxor/Diferenciais. Só o intro (`.faqs__intro`, classe nova — antes
+     era uma div sem classe própria) — a lista de perguntas/respostas
+     continua alinhada à esquerda, não foi pedido centralizar ela. */
+  .faqs__intro { text-align: center; }
 }
 
 /* ==========================================================================
@@ -1416,7 +1731,23 @@ body.nav-mobile-open { overflow: hidden; }
   text-wrap: balance;
 }
 
-@media screen and (max-width: 991px) {
+/* Bug real (achado testando ~1024px, iPad Pro): o botão "Começar teste
+   grátis" de cada `.pricing-card__cta` usa `.btn`, que tem `white-space:
+   nowrap` — isso trava a largura mínima de cada card em ~249px
+   (min-content, floor do texto sem quebrar). 4 cards + 3 gaps
+   (~var(--space-sm)) somam ~1068px de largura mínima pro grid de 4
+   colunas, mas o `.layout-container` só chega nesse tamanho a partir de
+   ~1260px de viewport (1260 − 2×96px de gutter ≈ 1068px) — abaixo disso
+   e acima do breakpoint antigo de 991px, sobrava uma "zona morta" onde a
+   4ª coluna ("Pruxor Elite") estourava a largura da página inteira
+   (overflow horizontal real, não só um corte visual). Breakpoint subido
+   de 991px pra 1260px pra fechar essa zona morta por completo — mesma
+   lógica da "faixa tweener" já usada em `.about-outcomes` (1240px) pro
+   mesmo tipo de problema (largura mínima de conteúdo não cabendo antes
+   do container atingir o tamanho máximo). `.problem__cards`/
+   `.value-props__cards` usam o mesmo `repeat(4, 1fr)` mas não têm esse
+   problema — não têm CTA com texto sem quebra dentro do card. */
+@media screen and (max-width: 1260px) {
   .pricing-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media screen and (max-width: 767px) {
