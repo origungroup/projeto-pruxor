@@ -2957,6 +2957,52 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
      colunas a partir de 1280px, zero overflow em qualquer um, todos os
      4 cards sempre visíveis por completo.
 
+- **Bug real corrigido: botão de "Como funciona" descolava do heading
+  sticky no desktop/tablet (2026-08-23)**. Usuário mandou print mid-scroll
+  mostrando o botão "Criar minha conta grátis" sobrepondo o texto "Sem
+  cartão, sem burocracia." — o botão devia rolar JUNTO com o heading
+  (ambos sticky), mas só o heading tinha `position: sticky`. Causa raiz:
+  na rodada que moveu o botão pra depois dos cards no mobile, heading e
+  botão viraram 2 LINHAS separadas do grid (`"intro cards" / "cta
+  cards"`) — mas o "range" de sticky de um item vale só dentro da altura
+  da PRÓPRIA linha do grid em que ele está, e a linha 1 (só o heading,
+  curta) é bem menor que a linha 2 (que soma o resto dos cards). O
+  heading ficava "preso" corretamente (sticky funcionando dentro do seu
+  range curto), mas o botão (não-sticky, numa linha com range de posição
+  diferente) rolava numa velocidade diferente — descolando visualmente
+  conforme a página rolava, até sobrepor o heading.
+  - **Correção**: heading e botão voltaram a viver dentro de UM wrapper
+    só (`.how-it-works__sticky-col`, elemento novo no HTML) que é o único
+    item `position: sticky` agora — grid voltou a ter 1 linha só
+    (`"sticky cards"`, não mais 2), então o wrapper ocupa a MESMA altura
+    de linha que a coluna de cards (a mais alta), dando ao sticky o range
+    inteiro pra "colar" durante o scroll — exatamente o comportamento
+    original, antes da mudança que introduziu o bug.
+  - **Mobile preservado com `display: contents`**: pra ainda dar pra
+    mover o botão pra depois dos cards no mobile (pedido de rodada
+    anterior, continua válido), `.how-it-works__sticky-col` vira
+    `display: contents` em ≤991px — some da árvore de caixas (o
+    `position: sticky` nele também deixa de fazer sentido/se aplicar,
+    coerente com o breakpoint onde o intro já vira `static` de qualquer
+    forma), e heading/botão voltam a ser filhos DIRETOS do grid, dando
+    pra reordenar via `grid-template-areas` como antes.
+  - **Validado via Playwright**: gap entre heading e botão medido em 5
+    pontos ao longo de todo o scroll no desktop (1440px) — exatamente
+    24px em TODOS, sem nenhum drift. Breakpoint 990px/992px testado dos
+    dois lados (mobile stack vs. sticky desktop) — ambos corretos, sem
+    modo quebrado na fronteira. Mobile (414px) reconfirmado: botão ainda
+    aparece depois dos 3 cards, ainda centralizado. Zero erros de
+    console em qualquer largura testada.
+
+- **Cabeçalho de "Planilha vs Pruxor" no mobile: só "Na planilha" sobra
+  (2026-08-23)** — 3ª rodada nesse mesmo componente. Depois de mover
+  "Pruxor" pra dentro da divisória (rodada anterior), o cabeçalho ainda
+  mostrava "Na planilha" + "Pruxor" empilhados; usuário pediu deixar só
+  "Na planilha" ali (redundante repetir "Pruxor" duas vezes na tela).
+  `.compare__header .compare__header-label--brand { display: none; }`
+  em ≤767px — "Pruxor" continua existindo normalmente na divisória
+  mid-lista, só sumiu do cabeçalho do topo. Desktop confirmado intocado.
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das

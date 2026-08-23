@@ -1083,38 +1083,47 @@ body.nav-mobile-open { overflow: hidden; }
    saiu do JS (ver memoria.md). Zero mecanismo de scroll customizado
    agora — só `position: sticky` no heading, puro CSS.
    ========================================================================== */
-/* `grid-template-areas` (não só 2 colunas com 2 filhos) porque o CTA
-   (`.how-it-works__cta`) é um item PRÓPRIO do grid agora, não mais filho
-   de `.how-it-works__intro` — precisa disso pra poder reordenar ele pra
-   DEPOIS dos cards no mobile (ver ≤991px abaixo) sem duplicar HTML nem
-   mexer no DOM por breakpoint. No desktop, "cta" ocupa a 2ª linha da
-   coluna 1 (embaixo do heading) e "cards" ocupa as 2 linhas inteiras da
-   coluna 2 (span natural cobre o gap entre as linhas, sem "buraco"
-   visual no meio dos cards). */
+/* Grid de 1 linha só (2 colunas: sticky-col | cards) — voltou a ser
+   assim depois de um bug real. Numa tentativa anterior, "intro"
+   (heading) e "cta" (botão) tinham virado 2 LINHAS separadas do grid
+   ("intro cards" / "cta cards") só pra dar pra reordenar o botão pra
+   depois dos cards no mobile — mas isso quebrou o sticky no desktop: o
+   "range" de sticky de um item vale só dentro da altura da PRÓPRIA
+   linha do grid em que ele está, e a linha 1 (só o heading) é bem mais
+   curta que a coluna de cards. Resultado: o heading (sticky) e o botão
+   (não-sticky, preso na posição fixa da linha 2) se descolavam um do
+   outro conforme a página rolava, com o botão passando por cima do
+   heading (bug real, reportado com print). Corrigido voltando a 1 linha
+   só, com heading+botão dentro de UM wrapper (`.how-it-works__sticky-col`)
+   que ocupa essa linha inteira — como só existe 1 linha no grid, a altura
+   dela é a da coluna mais alta (os cards), e o wrapper sticky tem esse
+   range inteiro pra "colar" durante o scroll, exatamente como era antes
+   do bug. */
 .how-it-works__layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-areas:
-    "intro cards"
-    "cta   cards";
+  grid-template-areas: "sticky cards";
   column-gap: var(--space-xl);
-  row-gap: var(--space-sm);
   align-items: start;
 }
 /* `position: sticky` simples — SEM JS, sem trilho alto, sem crossfade.
-   O heading fica parado enquanto a coluna da direita (mais alta, 3 cards
-   empilhados em fluxo normal) rola por baixo dele, exatamente como
-   qualquer sidebar sticky ao lado de uma lista mais alta. `top` usa só
-   `--nav-height`, igual a todo outro elemento sticky do site
-   (`.feature-showcase__stage`). */
-.how-it-works__intro { grid-area: intro; position: sticky; top: var(--nav-height); max-width: 30rem; padding-top: var(--space-m); }
-/* `justify-self: start` replica o alinhamento à esquerda que o botão já
-   tinha antes (quando era filho de `.how-it-works__intro`, um bloco sem
-   `text-align:center`) — sem isso, um item de grid sem largura própria
-   estica pra ocupar a coluna inteira por padrão (`justify-items: normal`
-   ~ stretch), o que deixaria o botão esticado feio em vez do formato
-   pílula compacto de sempre. */
-.how-it-works__cta { grid-area: cta; justify-self: start; }
+   O wrapper (heading + botão juntos) fica parado enquanto a coluna da
+   direita (mais alta, 3 cards empilhados em fluxo normal) rola por
+   baixo dele, exatamente como qualquer sidebar sticky ao lado de uma
+   lista mais alta. `top` usa só `--nav-height`, igual a todo outro
+   elemento sticky do site (`.feature-showcase__stage`). */
+.how-it-works__sticky-col {
+  grid-area: sticky;
+  position: sticky;
+  top: var(--nav-height);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  max-width: 30rem;
+  padding-top: var(--space-m);
+}
+.how-it-works__intro { max-width: none; padding: 0; }
 
 .how-it-works__card-col { grid-area: cards; display: flex; flex-direction: column; gap: var(--space-l); }
 /* Ícone à esquerda + tag "Etapa N" à direita, na mesma linha — pedido
@@ -1140,9 +1149,14 @@ body.nav-mobile-open { overflow: hidden; }
 }
 
 /* Empilhado (≤991px): pedido explícito do usuário pra mover o botão pra
-   DEPOIS dos cards (antes ficava logo abaixo do heading, antes deles) —
-   só reordena a `grid-template-areas` (intro → cards → cta), sem
-   duplicar HTML nem precisar de JS. */
+   DEPOIS dos cards (antes ficava logo abaixo do heading, antes deles).
+   `.how-it-works__sticky-col` (o wrapper sticky do desktop) vira
+   `display: contents` — ele mesmo some da árvore de caixas (inclusive o
+   `position: sticky`, que só faz sentido preso a uma caixa de verdade,
+   deixa de se aplicar sozinho), e `.how-it-works__intro`/`.how-it-works__cta`
+   passam a ser filhos DIRETOS de `.how-it-works__layout` de novo — só
+   nesse ponto dá pra reordenar cada um via `grid-template-areas`
+   (intro → cards → cta) sem duplicar HTML nem precisar de JS. */
 @media screen and (max-width: 991px) {
   .how-it-works__layout {
     grid-template-columns: 1fr;
@@ -1152,14 +1166,14 @@ body.nav-mobile-open { overflow: hidden; }
       "cta";
     gap: var(--space-l);
   }
-  .how-it-works__intro { position: static; max-width: none; padding: 0; }
+  .how-it-works__sticky-col { display: contents; }
 }
 /* Headline centralizado no mobile — pedido explícito do usuário, mesmo
    tratamento aplicado em Soluções/Planilha vs Pruxor/Diferenciais/FAQ.
-   O CTA (`.how-it-works__cta`) não é mais filho de `.how-it-works__intro`
-   (virou item próprio do grid, ver bloco acima) — `text-align:center` no
-   intro não alcança ele mais, por isso ganhou centralização própria via
-   `justify-self`. */
+   `.how-it-works__cta`, uma vez "solto" pelo `display: contents` do
+   wrapper (ver bloco acima), precisa de centralização própria via
+   `justify-self` — `text-align:center` no intro não alcança ele, já que
+   não é mais filho dele nesse breakpoint. */
 @media screen and (max-width: 767px) {
   .how-it-works__intro { text-align: center; }
   .how-it-works__cta { justify-self: center; }
@@ -1301,13 +1315,16 @@ body.nav-mobile-open { overflow: hidden; }
      foi morar na divisória entre as duas listas (ver
      `.compare__group-divider` mais abaixo), onde ele já tem mais sentido
      agora que a lista virou "planilha inteira, depois pruxor inteira"
-     em vez de pareada linha a linha. `.compare__header-label--brand`
-     ("Pruxor", a 2ª linha do cabeçalho) já era `justify-content:center`
-     desde sempre — sem o "VS" dividindo espaço, o grid vira 1 coluna só
-     e as duas linhas (Na planilha / Pruxor) ficam simplesmente
-     empilhadas e centralizadas. */
+     em vez de pareada linha a linha. **2ª rodada, mesmo dia**: usuário
+     olhou o resultado (Na planilha + Pruxor empilhados no cabeçalho) e
+     pediu deixar só "Na planilha" ali — o rótulo "Pruxor" já vive na
+     divisória (`.compare__group-divider`, ver mais abaixo), repeti-lo
+     aqui em cima virou redundante. `.compare__header-label--brand`
+     ("Pruxor") escondido também; sobra só "Na planilha", centralizado
+     sozinho no cabeçalho. */
   .compare__header { grid-template-columns: 1fr; }
   .compare__header .compare__vs { display: none; }
+  .compare__header .compare__header-label--brand { display: none; }
   /* Pedido explícito do usuário: mostrar a lista inteira "Na planilha"
      primeiro, depois a lista inteira "Pruxor" — sem alternar entre as
      duas a cada linha (era o que acontecia antes: cada `.compare__row`
