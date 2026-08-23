@@ -2617,6 +2617,11 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
   escuro com contraste bem acima do mínimo (medido via Playwright: 19.7:1
   no CTA final, 15.1:1 em `.about-outcomes__cta`, ambos WCAG AAA
   folgados). Não depende mais de transparência sobre fundo variável.
+  **Ajuste seguinte, mesmo dia**: usuário pediu "deixe mais escuro um
+  pouco" — subido de 12% pra **20%** de mistura de `--color-ink` no
+  branco. Continua opaco e com contraste alto (texto escuro sobre um
+  cinza-claro mais perceptível), só um degrau mais visível como estado de
+  hover.
 - **Subheadline do CTA final reduzido de 4 pra 3 linhas (2026-08-22)** —
   mesmo pedido do usuário, mesma sessão. `.full-width-feature__paragraph`
   tinha `max-width: 56ch`; texto não podia mudar (pedido explícito). Medido
