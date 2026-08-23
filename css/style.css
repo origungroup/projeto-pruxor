@@ -196,7 +196,7 @@ svg { display: block; }
    tom opaco só um pouco mais escuro que o branco base — continua claro o
    bastante pro texto escuro manter ótimo contraste, mas dá um feedback de
    hover de verdade, sem depender de transparência sobre um fundo variável. */
-.btn--on-dark:hover { background: color-mix(in srgb, var(--color-ink) 12%, white); }
+.btn--on-dark:hover { background: color-mix(in srgb, var(--color-ink) 20%, white); }
 .btn--outline-inverse { background: transparent; color: var(--text-inverse); border: 1px solid rgba(255, 255, 255, 0.35); }
 .btn--outline-inverse:hover { background: rgba(255, 255, 255, 0.1); }
 .btn svg { width: 1em; height: 1em; }
