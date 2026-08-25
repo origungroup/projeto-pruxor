@@ -40,11 +40,19 @@ README.md       → detalhes técnicos mais extensos (licenças, decisões)
 Não criar novas páginas/rotas sem pedido explícito do usuário — o site é
 página única de propósito.
 
-Não há pasta `assets/` em uso — todo ícone é SVG inline no HTML, não há
-imagens reais no site. A hero não tem mais card visual/mockup do lado
+Todo ícone de dentro das seções continua sendo SVG inline no HTML (não
+mudou). **Existe uma pasta `assets/` desde 2026-08-25** —
+`assets/Imagens-solucoes/` guarda as 5 telas reais do produto usadas na
+sessão "Soluções" (ver bullet "Telas reais do produto" em "Design e
+experiência"); `assets/Imagens-logo/` guarda os arquivos de logo do
+usuário (2 PDFs — `Logo completa.pdf`, ainda sem uso, e
+`logo-fav-icon.pdf`, convertido pra PNG e usado como favicon do site,
+ver bullet "Favicon" em "Design e experiência" — mais 2 PNGs prontos com
+fundo transparente, também ainda sem uso). Fora isso, o site continua
+sem outros assets de imagem. A hero não tem card visual/mockup do lado
 direito — foi removido de propósito (ver bullet da hero em "Design e
-experiência"); não reintroduzir uma imagem ou placeholder ali sem pedido
-explícito.
+experiência"); não
+reintroduzir uma imagem ou placeholder ali sem pedido explícito.
 
 ## Regras do projeto
 
@@ -120,6 +128,48 @@ explícito.
 - Marca: roxo `#514fee` (`--color-brand`), fundo quase branco
   (`--bg-page`), texto quase preto (`--color-ink`).
 - Tipografia: General Sans para heading/corpo, Inter para UI/nav/botões.
+- **Favicon (desde 2026-08-25)**: `assets/Imagens-logo/favicon.png` +
+  `apple-touch-icon.png`, convertidos do PDF do usuário
+  (`logo-fav-icon.pdf`, via Ghostscript + recorte em Python/Pillow —
+  ver `memoria.md` pro processo completo). É só o símbolo triangular do
+  PDF (o PDF também tem um texto/tagline em branco embaixo, cortado por
+  ficar ilegível em tamanho de favicon). **A cor do símbolo (gradiente
+  azul/verde/teal) não bate com o roxo `--color-brand` usado no resto do
+  site** — não foi alinhado nem foi pedido alinhar; o roxo do site já é
+  sabidamente herdado do clone de referência, não a cor real da marca
+  (decisão registrada em `memoria.md`, seção "Decisões" — "Cor de
+  marca"). Não mudar a paleta do site por causa disso sem pedido
+  explícito.
+- **Logo real na navbar, "Planilha vs Pruxor" e rodapé (desde
+  2026-08-25)**: substituiu o antigo placeholder (`.nav__logo-mark`, um
+  quadradinho de cor de marca + texto "Pruxor" ao lado — classe removida
+  do CSS, não tem mais uso). Fonte: `assets/Imagens-logo/logo-sem-fundo-
+  fonte-branca.png`/`-preto.png` (PNGs prontos do usuário, lockup
+  completo ícone+"PRUXOR"+tagline) recortados pra `logo-lockup-white.png`/
+  `-black.png` (só ícone+"PRUXOR", sem a tagline — não cabe/duplicaria a
+  tagline própria do rodapé, `.footer__tagline`). **Navbar troca de
+  versão conforme o scroll** (branca no topo transparente sobre a hero,
+  preta na pílula rolada ou com o menu mobile aberto — via `display` nas
+  duas versões, mesmo escopo do texto claro/escuro documentado no bullet
+  "Navbar" acima). "Planilha vs Pruxor" (`.compare__header-label--brand`,
+  cabeçalho desktop + divisória mobile) sempre branca — fundo sempre
+  escuro, sem estado equivalente ao "rolado". **Rodapé usa uma imagem
+  DIFERENTE das outras 3** (2ª rodada, mesmo dia): não é o
+  `logo-lockup-black.png` compacto, e sim `logo-completa.png` — o lockup
+  INTEIRO (ícone + "PRUXOR" + tagline "Sistema de Gestão e
+  Acompanhamento de Obras" embutida na própria imagem), convertido de
+  `Logo completa.pdf`. Substitui JUNTO a antiga logo compacta E o
+  parágrafo separado `.footer__tagline` (removido do HTML/CSS, virou
+  redundante) — pedido explícito do usuário. Dimensiona por LARGURA
+  (`.footer__logo-img--completa { width: 200px; height: auto; }`), não
+  por altura como a navbar, já que é um lockup vertical (ícone em cima,
+  texto embaixo), não horizontal. **Atenção**: o arquivo
+  `logo-sem-fundo-fonte-preto.png` (usado só pra gerar o
+  `logo-lockup-black.png` compacto da navbar) tem um erro de digitação
+  na tagline ("ACOMPANHEMTNO" em vez de "ACOMPANHAMENTO") — não afeta
+  nenhum uso atual (a tagline foi recortada fora nesse arquivo
+  específico), mas `Logo completa.pdf` (a fonte do rodapé) já tem o
+  texto CERTO, então não confundir os dois se for mexer nisso de novo.
 - **Hero** (`index.html`) foge do padrão claro do resto do site de
   propósito: fundo em gradiente de 6 paradas, clareando o tempo todo sem
   nenhum trecho parado na mesma cor (`--color-ink` no topo → `--color-brand`
@@ -250,7 +300,13 @@ explícito.
   menu mobile (`.nav__list--mobile`) é um irmão fora da barra com fundo
   sempre claro, e o overlay dele fica entre a barra e a hero quando aberto
   — se o texto claro vazasse pra lá, ficaria ilegível (claro sobre claro).
-  Qualquer ajuste nessas regras deve manter esse escopo.
+  Qualquer ajuste nessas regras deve manter esse escopo. **A logo
+  (`.nav__logo`, desde 2026-08-25 uma imagem real, não mais texto+mark)
+  segue o MESMO escopo/estado**, só que via `display` em vez de `color`
+  — duas versões (`.nav__logo-img--white`/`--black`) ficam as duas no
+  DOM, uma escondida por vez (ver bullet "Logo real" em "Design e
+  experiência"), já que CSS não recolore uma imagem raster como recolore
+  texto.
 - Efeitos já implementados: menu mobile em overlay full-screen, accordion
   do FAQ, scroll-reveal (fade + blur) nas seções, feature showcase com
   imagem+texto presos trocando por crossfade em etapas, "Como funciona"
@@ -353,14 +409,27 @@ explícito.
   no DOM automaticamente** (`steps = querySelectorAll(...).length`), então
   ir de 2 pra 5 etapas não pediu nenhuma mudança de JS — só adicionar mais
   blocos/painéis com `data-step` sequencial.
-  - **Placeholder com rótulo por módulo**: sem prints reais ainda,
-    `.feature-showcase__visual-panel` (desktop, crossfade) e
-    `.feature-showcase__block-visual` (mobile) mostram um rótulo de texto
-    (`.feature-showcase__visual-label`) dizendo qual tela vai entrar ali
-    ("Tela do financeiro" etc.) — sem isso, 5 caixas cinzas idênticas
-    ficariam indistinguíveis. Cada `data-step` tem uma variação sutil de
-    ângulo do mesmo gradiente de marca (`--brand-10` + `--bg-subtle`),
-    nunca uma cor nova.
+  - **Telas reais do produto (desde 2026-08-25)**: `.feature-showcase__visual-panel`
+    (desktop, crossfade) e `.feature-showcase__block-visual` (mobile,
+    thumbnail por módulo) mostram um `<img class="feature-showcase__visual-img">`
+    de verdade agora — primeiras imagens reais do projeto (`assets/Imagens-solucoes/`,
+    fora do padrão "site 100% vanilla/SVG sem imagem nenhuma" registrado em
+    "Estrutura", ver bullet ali). `object-fit: cover` preenche o painel/
+    miniatura sem distorcer; `overflow: hidden` no container garante que a
+    imagem respeite o `border-radius`. O antigo placeholder de texto
+    (`.feature-showcase__visual-label`, "Tela do financeiro" etc.) e os
+    gradientes de marca variados por `data-step` (só existiam pra
+    diferenciar 5 caixas cinzas idênticas) foram removidos — não existem
+    mais no CSS. **Bug real, já corrigido**: ao trocar o placeholder pela
+    imagem, o `display: flex` de `.feature-showcase__block-visual` (que
+    centralizava o texto) foi removido sem perceber que ele TAMBÉM era o
+    único override do `display: none` da regra base — a miniatura mobile
+    ficou invisível (imagem nunca carregava, já que `loading="lazy"` não
+    dispara sem caixa de layout) até um `display: block` explícito ser
+    adicionado de volta. Ao mexer nesse componente de novo, lembrar que a
+    regra base é `display: none` por padrão (só existe visualmente no
+    mobile) — qualquer edição no override do breakpoint precisa manter
+    ALGUM valor de `display` que não seja `none`.
   - **Bug real evitado no fallback mobile**: a versão anterior (2 etapas)
     já tinha uma imprecisão tolerável — mobile mostrava só a imagem da
     etapa `is-active` (sempre a 1ª) acima de TODOS os blocos de texto
@@ -587,14 +656,15 @@ explícito.
   contêm `.card--vivid`): sem isso, o lift/scale/brilho do hover do
   `.card--vivid` fica cortado em cima e embaixo pelo `overflow: hidden`
   do container do loop (bug real, reportado com print).
-  - **Sem foto real de pessoa** — o site é 100% vanilla/SVG, sem nenhum
-    asset de imagem introduzido ainda (ver "Estrutura" no topo deste
-    arquivo). Em vez de uma foto realista, `.testimonial-card__avatar` é
-    um círculo com iniciais, cor variando por `nth-child` (mistura da
-    cor de marca única do produto, nunca uma paleta nova — mesma
-    disciplina do `.card--vivid`). Se o usuário pedir fotos de verdade
-    depois, aí sim vale considerar o primeiro asset de imagem real do
-    projeto (mudança de precedente, não decidir sozinho).
+  - **Sem foto real de pessoa** — `.testimonial-card__avatar` é um
+    círculo com iniciais, cor variando por `nth-child` (mistura da cor de
+    marca única do produto, nunca uma paleta nova — mesma disciplina do
+    `.card--vivid`), não uma foto realista. Isso não mudou mesmo depois
+    das telas reais da sessão "Soluções" (ver "Estrutura" no topo deste
+    arquivo) terem introduzido os primeiros assets de imagem do projeto —
+    decisões independentes, uma não implica a outra. Se o usuário pedir
+    fotos de verdade aqui também, é um pedido novo e explícito, não
+    decidir sozinho.
   - **Nome, profissão-com-cidade dos 5 depoimentos são fictícios** — o
     briefing oficial deu o texto do depoimento e a profissão, mas marcou
     `[Nome]`/`[Cidade]` como parâmetro pra preencher; nomes/cidades

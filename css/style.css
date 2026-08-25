@@ -310,8 +310,25 @@ body:not(.nav-mobile-open) .site-header.has-hero:not(.is-scrolled) .site-header_
 }
 .site-header.is-scrolled .nav__container { height: calc(var(--nav-height) - 18px); }
 
-.nav__logo { display: flex; align-items: center; gap: 0.5em; font-family: var(--font-primary); font-weight: 600; font-size: var(--text-md); transition: color 0.3s ease; }
-.nav__logo-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--color-brand); flex: none; }
+.nav__logo { display: flex; align-items: center; }
+/* Logo real (2026-08-25) — antes era só um quadradinho de cor de marca
+   (`.nav__logo-mark`) + o texto "Pruxor" ao lado; agora é a imagem do
+   lockup (ícone + "PRUXOR"), recortada de `assets/Imagens-logo/
+   logo-sem-fundo-fonte-branca.png`/`-preto.png` (removida a tag-line
+   "Sistema de gestão..." do arquivo original — não cabe/não faz sentido
+   numa navbar compacta). Altura fixa, largura automática (a imagem já
+   tem a proporção certa do lockup). */
+.nav__logo-img { height: 40px; width: auto; display: block; }
+/* Duas versões (branca/preta) ficam as duas no DOM — trocar a COR de uma
+   imagem raster via CSS não é possível como era com o texto/mark antigo
+   (`color`), então a troca vira mostrar/esconder uma ou outra via
+   `display`, no MESMO escopo/estado já usado pro texto claro vs escuro
+   do menu (ver bloco de `.nav__link` logo abaixo) — navbar transparente
+   sobre a hero (não rolada, menu mobile fechado) usa a versão branca;
+   qualquer outro estado (rolada = pílula clara, ou menu mobile aberto)
+   usa a preta. */
+.nav__logo-img--white { display: none; }
+.nav__logo-img--black { display: block; }
 
 .nav__list { display: flex; align-items: center; gap: var(--space-sm); }
 .nav__link {
@@ -330,12 +347,16 @@ body:not(.nav-mobile-open) .site-header.has-hero:not(.is-scrolled) .site-header_
    mobile (`.nav__list--mobile`) também tem `.nav__link` mas é um irmão
    fora da barra, com fundo sempre claro — se a regra alcançasse ele,
    o texto claro ficaria ilegível (claro sobre claro) com o menu aberto. */
-body:not(.nav-mobile-open) .site-header.has-hero:not(.is-scrolled) .site-header__bar .nav__logo,
 body:not(.nav-mobile-open) .site-header.has-hero:not(.is-scrolled) .site-header__bar .nav__link,
 body:not(.nav-mobile-open) .site-header.has-hero:not(.is-scrolled) .site-header__bar .nav__hamburger-button {
   color: var(--text-inverse);
 }
 body:not(.nav-mobile-open) .site-header.has-hero:not(.is-scrolled) .site-header__bar .nav__link:hover { color: rgba(255, 255, 255, 0.7); }
+/* Mesmo escopo/estado da regra de texto claro acima, aplicado à troca de
+   versão do logo (branca em vez de preta) — ver comentário em
+   `.nav__logo-img--white/--black`. */
+body:not(.nav-mobile-open) .site-header.has-hero:not(.is-scrolled) .site-header__bar .nav__logo-img--white { display: block; }
+body:not(.nav-mobile-open) .site-header.has-hero:not(.is-scrolled) .site-header__bar .nav__logo-img--black { display: none; }
 
 .nav__actions { display: flex; align-items: center; gap: var(--space-2xs); }
 .nav__hamburger-button { display: none; padding: 0.4em; transition: color 0.3s ease; }
@@ -829,7 +850,7 @@ body.nav-mobile-open { overflow: hidden; }
    3) Padding do card: `var(--space-l) var(--space-2xs)` = exatamente
       48px/12px pedidos (tokens batem certinho com os valores, não
       precisou hardcodear px solto).
-   4) Conteúdo centralizado (`text-align: center` + `margin-inline: auto`
+   2) Conteúdo centralizado (`text-align: center` + `margin-inline: auto`
       no parágrafo, que tem `max-width` próprio e por isso precisa de
       margin automática pra centralizar a CAIXA, não só o texto dentro
       dela) e `line-height` do heading reduzido (1.55 herdado do body,
@@ -932,9 +953,7 @@ body.nav-mobile-open { overflow: hidden; }
 .feature-showcase__visual-panel {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   border-radius: var(--radius-l);
   background: var(--bg-subtle);
   opacity: 0;
@@ -942,25 +961,13 @@ body.nav-mobile-open { overflow: hidden; }
   transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
 }
 .feature-showcase__visual-panel.is-active { opacity: 1; transform: scale(1); }
-/* Ainda não temos os prints reais de cada tela (produto não forneceu as
-   imagens ainda) — placeholder com rótulo de texto dizendo qual tela vai
-   entrar ali, pra não ficarem 5 caixas cinzas idênticas e indistinguíveis
-   enquanto isso. Cada etapa ganha uma variação sutil do mesmo gradiente
-   de marca (ângulo diferente) só pra dar variedade visual sem introduzir
-   cor nova — mesma lógica do `.card--vivid` (nunca inventar paleta nova). */
-.feature-showcase__visual-label {
-  font-family: var(--font-secondary);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  opacity: 0.55;
-}
-.feature-showcase__visual-panel[data-step="2"] { background: linear-gradient(155deg, var(--brand-10), var(--bg-subtle)); }
-.feature-showcase__visual-panel[data-step="3"] { background: linear-gradient(205deg, var(--brand-10), var(--bg-subtle)); }
-.feature-showcase__visual-panel[data-step="4"] { background: linear-gradient(115deg, var(--brand-10), var(--bg-subtle)); }
-.feature-showcase__visual-panel[data-step="5"] { background: linear-gradient(250deg, var(--brand-10), var(--bg-subtle)); }
+/* Telas reais do produto (2026-08-25) — substituem o placeholder de
+   texto ("Tela do financeiro" etc.) que existia enquanto não tínhamos os
+   prints. `object-fit: cover` preenche o painel inteiro sem distorcer,
+   cortando o excesso; `overflow: hidden` no painel (adicionado junto)
+   garante que a imagem respeite o `border-radius` do card em vez de
+   vazar pelos cantos arredondados. */
+.feature-showcase__visual-img { width: 100%; height: 100%; display: block; object-fit: cover; }
 
 .feature-showcase__content-col { position: relative; }
 .feature-showcase__block {
@@ -1017,19 +1024,25 @@ body.nav-mobile-open { overflow: hidden; }
   .feature-showcase__header-paragraph { max-width: none; }
   .feature-showcase__grid { grid-template-columns: 1fr; }
   .feature-showcase__visual-col { display: none; }
+  /* Telas reais (2026-08-25, mesma troca do painel de crossfade do
+     desktop) — `overflow: hidden` + `.feature-showcase__visual-img`
+     (`object-fit: cover`) preenche a miniatura sem distorcer.
+     `display: block` é OBRIGATÓRIO aqui (bug real, achado na
+     verificação): a regra base de `.feature-showcase__block-visual` é
+     `display: none` (só existe visualmente no mobile) — ao remover o
+     antigo `display: flex` (que centralizava o rótulo de texto,
+     desnecessário agora que a imagem preenche via width/height 100%),
+     o override do `display: none` foi embora junto por descuido,
+     deixando a miniatura invisível (e a imagem nunca carregava, já que
+     um elemento sem caixa de layout não dispara o `loading="lazy"`). */
   .feature-showcase__block-visual {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
+    overflow: hidden;
     aspect-ratio: 4 / 3.2;
     border-radius: var(--radius-l);
     background: var(--bg-subtle);
     margin-bottom: var(--space-m);
   }
-  .feature-showcase__block[data-step="2"] .feature-showcase__block-visual { background: linear-gradient(155deg, var(--brand-10), var(--bg-subtle)); }
-  .feature-showcase__block[data-step="3"] .feature-showcase__block-visual { background: linear-gradient(205deg, var(--brand-10), var(--bg-subtle)); }
-  .feature-showcase__block[data-step="4"] .feature-showcase__block-visual { background: linear-gradient(115deg, var(--brand-10), var(--bg-subtle)); }
-  .feature-showcase__block[data-step="5"] .feature-showcase__block-visual { background: linear-gradient(250deg, var(--brand-10), var(--bg-subtle)); }
   .feature-showcase__content-col { display: flex; flex-direction: column; gap: var(--space-2xl); }
   .feature-showcase__block {
     position: static;
@@ -1249,6 +1262,13 @@ body.nav-mobile-open { overflow: hidden; }
   color: var(--text-inverse);
   font-size: var(--text-sm);
 }
+/* Logo real (2026-08-25) — substitui o antigo `.nav__logo-mark` + texto
+   "Pruxor" nos dois lugares que usam `.compare__header-label--brand`
+   (cabeçalho do desktop e a divisória entre as listas no mobile). Sempre
+   a versão branca — o fundo de `.compare` é escuro em qualquer estado,
+   não tem equivalente ao "rolar a página" da navbar que justificaria
+   trocar de versão aqui. */
+.compare__brand-logo { height: 32px; width: auto; display: block; }
 .compare__vs {
   justify-self: center;
   width: 40px;
@@ -1632,7 +1652,23 @@ body.nav-mobile-open { overflow: hidden; }
 .site-footer { padding-top: var(--space-2xl); }
 .footer__top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xl); padding-bottom: var(--space-xl); border-bottom: 1px solid var(--border-subtle); flex-wrap: wrap; }
 .footer__brand { max-width: 280px; display: flex; flex-direction: column; gap: var(--space-2xs); }
-.footer__tagline { color: var(--text-secondary); font-size: var(--text-xs); }
+/* Logo real (2026-08-25) — substitui o antigo `.nav__logo-mark` + texto
+   "Pruxor". Fundo do rodapé é sempre claro, então sempre a versão preta
+   (sem troca de estado, diferente da navbar). */
+.footer__logo-img { height: 28px; width: auto; display: block; }
+/* 2ª rodada, mesmo dia: usuário pediu pra trocar a logo compacta (ícone+
+   "PRUXOR") + `.footer__tagline` (parágrafo à parte, "Gestão
+   inteligente...") por UMA imagem só — o lockup completo de
+   `assets/Imagens-logo/Logo completa.pdf` (ícone + "PRUXOR" + a tagline
+   OFICIAL "Sistema de Gestão e Acompanhamento de Obras", já com o
+   texto certo — diferente do PNG usado antes, esse PDF não tinha o erro
+   de digitação "ACOMPANHEMTNO"). Como agora é um lockup vertical (ícone
+   em cima, texto embaixo, proporção ~1.35:1 largura/altura — bem menos
+   "largo" que o `logo-lockup-*` compacto usado na navbar), dimensiona
+   por LARGURA (não altura) — `.footer__tagline` (parágrafo separado)
+   removido do HTML, redundante com a tagline que já vem dentro da
+   imagem. */
+.footer__logo-img--completa { width: 200px; height: auto; }
 /* Página única: o footer só linka para seções desta mesma página (âncoras),
    não para um sitemap multi-página como no site de referência. */
 .footer__nav-links { display: flex; flex-wrap: wrap; gap: var(--space-m); }
@@ -1647,10 +1683,22 @@ body.nav-mobile-open { overflow: hidden; }
 .footer__legal-link:hover { color: var(--text-secondary); }
 .footer__divider { width: 1px; height: 12px; background: var(--border-subtle); flex: none; }
 
+/* Todo o rodapé centralizado no mobile — pedido explícito do usuário
+   (antes só `.footer__bottom`, copyright+legal links, já ficava
+   centralizado por herdar `align-items: center` da regra base; o resto
+   — logo, nav-links, contact-links — estava alinhado à esquerda,
+   `align-items: flex-start`). `align-items: center` no `.footer__top`
+   (flex column) já centraliza cada bloco filho (`.footer__brand`,
+   `.footer__nav-links`, `.footer__contact-links`) como um todo, já que
+   eles encolhem pro tamanho do próprio conteúdo nesse modo (em vez de
+   esticar pra largura toda); `.footer__contact-links` precisa do
+   próprio `align-items: center` além disso, pra centralizar os 2 links
+   EMPILHADOS dentro do próprio bloco (e-mail embaixo do Instagram),não
+   só o bloco inteiro dentro do rodapé. */
 @media screen and (max-width: 767px) {
-  .footer__top { flex-direction: column; align-items: flex-start; }
+  .footer__top { flex-direction: column; align-items: center; text-align: center; }
   .footer__bottom { flex-direction: column; gap: var(--space-2xs); text-align: center; }
-  .footer__contact-links { flex-direction: column; align-items: flex-start; gap: var(--space-2xs); }
+  .footer__contact-links { flex-direction: column; align-items: center; gap: var(--space-2xs); }
   .footer__contact-links .footer__divider { display: none; }
 }
 

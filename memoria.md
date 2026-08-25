@@ -3003,6 +3003,220 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
   em ≤767px — "Pruxor" continua existindo normalmente na divisória
   mid-lista, só sumiu do cabeçalho do topo. Desktop confirmado intocado.
 
+- **Bug real corrigido: palavras coladas em 3 headings de "Soluções" no
+  desktop/tablet (2026-08-25)**. Usuário mandou print mostrando "Controle
+  financeiropor obra" (sem espaço) no desktop. Causa raiz: ao inserir o
+  `<br class="feature-set__heading-break">` manual (rodada de ajustes
+  mobile, `display:none` em desktop/tablet, `display:inline` só em
+  ≤767px) nos 3 headings mais longos, o espaço que existia entre as
+  palavras naquele ponto foi removido por engano junto com o texto
+  substituído — sem esse espaço, quando o `<br>` fica `display:none`
+  (desktop/tablet), não sobra NADA separando as duas palavras. Corrigido
+  adicionando um espaço logo depois de cada `<br>` (`financeiro<br
+  class="...">  por obra` etc.) — funciona nos dois cenários: no
+  desktop/tablet (`<br>` escondido) o espaço garante a separação normal;
+  no mobile (`<br>` ativo) o navegador colapsa/descarta espaço em branco
+  no início de uma nova linha, então não sobra recuo nem gap visível
+  antes de "por obra"/"profissional"/"tabela SINAPI" — confirmado via
+  medição de posição (Range API), não só visualmente.
+  Validado via Playwright nos 3 breakpoints pedidos pelo usuário
+  (desktop 1440px, tablet 991px/850px, mobile 414px): os 5 headings do
+  módulo (incluindo os 2 que nunca tiveram `<br>`, "Gestão de obras" e
+  "Controle de estoque") renderizam corretos em todos, `<br>` confirmado
+  `display:none`/`inline` no breakpoint certo, zero erro de console.
+
+- **Primeiras imagens reais do projeto: 5 telas do produto na sessão
+  "Soluções" (2026-08-25)**. Usuário adicionou os arquivos em
+  `assets/Imagens-solucoes/` e pediu pra mapear cada um a um módulo — o
+  primeiro mapeamento que ele mandou repetia "Controle financeiro por
+  obra" três vezes (erro de digitação/copy-paste), deixando "Orçamento"
+  e "Gestão de obras" sem imagem; identifiquei a inconsistência pelos
+  nomes dos arquivos (FINANCEIRO/ORÇAMENTOS/OBRAS/ESTOQUE/DIÁRIO DE
+  OBRA batem 1:1 com os 5 módulos) e o usuário confirmou o mapeamento
+  correto antes de eu mexer em qualquer coisa:
+  - `Pruxor - FINANCEIRO.jpg` → Controle financeiro por obra
+  - `Pruxor-ORÇAMENTOS.png` → Orçamento com a tabela SINAPI
+  - `Pruxor-OBRAS.png` → Gestão de obras
+  - `Pruxor-ESTOQUE.png` → Controle de estoque
+  - `Pruxor - DIÁRIO DE OBRA.png` → Diário de obra profissional
+  - **Substituem o placeholder de texto** (`.feature-showcase__visual-label`,
+    "Tela do financeiro" etc., mais os gradientes de marca variados por
+    `data-step` que só existiam pra diferenciar 5 caixas cinzas idênticas)
+    nos DOIS lugares onde cada módulo aparece: o painel de crossfade do
+    desktop (`.feature-showcase__visual-panel`) e a miniatura do fallback
+    mobile/tablet (`.feature-showcase__block-visual`). `<img
+    class="feature-showcase__visual-img">` com `object-fit: cover` +
+    `overflow: hidden` no container preenche sem distorcer, respeitando o
+    `border-radius`. `alt` descritivo nos painéis do desktop (o conteúdo
+    real, ex: "Tela do financeiro"); `alt=""` nas miniaturas mobile (já
+    eram `aria-hidden="true"` desde antes, decorativas). `loading="lazy"`
+    nos 10 `<img>` (5 imagens, cada uma referenciada 2x).
+  - **Bug real cometido e corrigido na mesma rodada**: ao limpar o CSS do
+    placeholder antigo, removi `display: flex` de
+    `.feature-showcase__block-visual` (achando que servia só pra
+    centralizar o texto) sem perceber que ele TAMBÉM era o único override
+    do `display: none` da regra base desse elemento (que só deveria
+    existir visualmente no mobile) — a miniatura sumiu por completo no
+    mobile/tablet (nem a imagem chegava a carregar, já que `loading="lazy"`
+    não dispara sem caixa de layout). Achado na verificação via Playwright
+    (não pelo usuário) e corrigido na hora com `display: block` explícito.
+    Lição registrada em `CLAUDE.md`: esse elemento tem `display: none`
+    como regra base — qualquer edição no override do breakpoint precisa
+    manter ALGUM valor de `display` que não seja `none`.
+  - Validado via Playwright em desktop (1440px, os 5 passos do
+    crossfade), tablet (850px) e mobile (414px, os 5 módulos empilhados):
+    todas as 10 posições carregando a imagem certa, sem 404 (nomes de
+    arquivo com espaço e acento — Á, Ç — resolvem bem, sem precisar
+    renomear nada), sem overflow novo, zero erros de console.
+  - **Nota de tamanho de arquivo, não endereçada**: as imagens têm
+    ~1-1.5MB cada (PNG sem compressão, exceto o financeiro que é JPG
+    ~170KB) — funcional, mas pesado; otimizar/comprimir não foi pedido,
+    fica como possível follow-up se o usuário notar carregamento lento.
+
+- **Favicon adicionado, convertido de PDF (2026-08-25)**. Usuário
+  adicionou uma pasta nova `assets/Imagens-logo/` (com 2 PDFs — "Logo
+  completa.pdf" e "logo-fav-icon.pdf" — e 2 PNGs já prontos, fundo
+  transparente, fonte branca/preta) e pediu explicitamente pra usar
+  `logo-fav-icon.pdf` como favicon, convertendo de PDF pra PNG (não
+  havia ferramenta de PDF→imagem pronta no ambiente — usei Ghostscript
+  10.04, já instalado mas fora do PATH como `gs`, via caminho completo
+  `gswin64c.exe`, + Python/Pillow pra recortar).
+  - **O PDF tem mais conteúdo que só o ícone**: é um lockup completo —
+    símbolo triangular (gradiente azul/verde, tipo um "A" ou avião de
+    papel) + um texto/tagline em branco logo abaixo (invisível contra
+    fundo claro, provavelmente pensado pra uso sobre fundo escuro em
+    outro contexto). Recortei só o símbolo (achei o bbox exato via
+    varredura do canal alpha, ignorando as linhas de texto abaixo) —
+    texto ficaria ilegível em tamanho de favicon de qualquer forma.
+    Reempacotado num canvas quadrado com ~16% de respiro ao redor,
+    exportado em 3 tamanhos: `favicon-master.png` (2035px, fonte de alta
+    resolução pra reaproveitar depois se precisar), `favicon.png`
+    (512px, usado no `<link rel="icon">`) e `apple-touch-icon.png`
+    (180px, usado no `<link rel="apple-touch-icon">`). Ambos os links
+    adicionados no `<head>` do `index.html`. Validado via Playwright:
+    os dois carregam com 200, conteúdo visível confirmado (não é PNG
+    vazio/transparente), zero erros de console.
+  - **Observação não endereçada, vale mencionar ao usuário**: a cor do
+    símbolo (gradiente azul/verde/teal) é bem diferente do roxo
+    `#514fee` (`--color-brand`) usado em todo o resto do site — CLAUDE.md
+    já registra que o roxo foi herdado do clone original de referência e
+    NÃO é a cor real da marca Pruxor (que, por essa logo, parece ser
+    teal/verde-azulado). Não mudei nada da paleta do site — só usei a
+    imagem pedida como favicon — mas fica registrado que pode ser um
+    sinal de rebrand futuro se o usuário pedir.
+  - **`Logo completa.pdf` ainda não foi tratado** — usuário só deu
+    instrução pro arquivo do favicon nesta rodada; "vamos ajustar as
+    logos" (plural) sugere que outros usos (navbar `.nav__logo-mark`,
+    footer) podem vir a seguir, aguardando pedido explícito antes de
+    mexer neles.
+
+- **Logo real aplicada em 4 lugares (navbar, "Planilha vs Pruxor",
+  rodapé) — 2026-08-25**. Usuário mandou 2 PNGs prontos
+  (`logo-sem-fundo-fonte-branca.png`/`-preto.png`, fundo transparente)
+  com o lockup completo (ícone + "PRUXOR" + tagline "Sistema de gestão e
+  acompanhamento de obras" — **tagline com erro de digitação no arquivo
+  original, "ACOMPANHEMTNO" em vez de "ACOMPANHAMENTO", avisado ao
+  usuário, não corrigido por não ter ferramenta de edição de texto em
+  raster**) e pediu pra usar a branca na navbar (padrão)/"Planilha vs
+  Pruxor", e a preta na navbar (quando rola)/rodapé.
+  - **Recorte necessário**: os PNGs originais são o lockup INTEIRO
+    (ícone + PRUXOR + 2 linhas de tagline, formato retrato). Pra caber
+    numa navbar/rodapé compactos (e não duplicar a tagline no rodapé,
+    que já tem a própria via `.footer__tagline`), recortei só ícone +
+    "PRUXOR" (excluindo as 2 linhas de tagline) — mesma técnica de
+    varredura do canal alpha usada no favicon. Gerou 2 arquivos novos,
+    reaproveitados nos 4 lugares: `logo-lockup-white.png` e
+    `logo-lockup-black.png` (1512×854, mesma proporção ~1.77:1 nos
+    dois).
+  - **Navbar precisa de troca de versão conforme o scroll** (branca no
+    topo transparente sobre a hero, preta na pílula rolada) — como não
+    dá pra trocar a COR de uma imagem raster via CSS (era `color` no
+    texto antigo "Pruxor"), as DUAS versões ficam no DOM
+    (`.nav__logo-img--white`/`--black`) e o CSS mostra uma ou esconde a
+    outra via `display`, reaproveitando o MESMO escopo/seletor já usado
+    pro texto claro vs escuro do menu (`body:not(.nav-mobile-open)
+    .site-header.has-hero:not(.is-scrolled) .site-header__bar`) — inclui
+    o caso de borda do menu mobile aberto no topo da página, onde a
+    versão PRETA aparece mesmo sem ter rolado (overlay do menu é sempre
+    claro, branco ficaria ilegível).
+  - **"Planilha vs Pruxor"**: sempre a versão branca nos dois lugares que
+    já usavam `.compare__header-label--brand` (cabeçalho desktop +
+    divisória mobile) — fundo do card é sempre escuro, sem estado
+    "rolado" equivalente à navbar.
+  - **Rodapé**: sempre a versão preta, sem troca (fundo sempre claro).
+  - **`.nav__logo-mark` removido do CSS** — não tem mais nenhum uso
+    (substituído pela imagem nos 4 lugares).
+  - Validado via Playwright: troca branco/preto confirmada nos 2
+    estados de scroll da navbar + no caso de borda do menu mobile aberto
+    no topo, logo correta (branca) nos 2 pontos do compare (desktop
+    header + divisória mobile), logo correta (preta) no rodapé, zero
+    404, zero erro de console.
+
+- **Rodapé: logo compacta + tagline separada trocadas por UMA imagem só
+  (2026-08-25, mesmo dia, 2ª rodada da logo)**. Usuário pediu pra usar
+  `Logo completa.pdf` (a 3ª imagem de logo da pasta, ainda sem uso até
+  então) no lugar da logo compacta + `.footer__tagline` (parágrafo
+  próprio, "Gestão inteligente para obras e projetos..."). Convertido
+  pra PNG do mesmo jeito que os outros (Ghostscript + recorte via
+  canal alpha) → `logo-completa.png` (3139×2321, ~1.35:1). **Essa versão
+  tem a tagline com o texto CERTO** ("Sistema de Gestão e
+  Acompanhamento de Obras") — diferente do PNG preto usado antes
+  (`logo-sem-fundo-fonte-preto.png`), que tinha o erro de digitação
+  "ACOMPANHEMTNO" (ver rodada anterior); esse PDF aparentemente é a
+  versão corrigida/final. `<p class="footer__tagline">` removido do
+  HTML (a tagline agora vem embutida na imagem) e sua regra CSS também
+  removida — sem uso em lugar nenhum do site. Nova classe
+  `.footer__logo-img--completa { width: 200px; height: auto; }` —
+  dimensiona por LARGURA (não altura como a logo compacta da navbar),
+  já que agora é um lockup vertical (ícone em cima, texto embaixo), não
+  mais horizontal. Validado via Playwright: 200px de largura fica bem
+  proporcional ao lado das outras colunas do rodapé (nav-links,
+  contact-links), tagline legível nos dois tamanhos, sem overflow, sem
+  gap órfão onde o parágrafo antigo estava, zero erro de console.
+  `Logo completa.pdf` agora está em uso; sobram só os 2 PNGs prontos
+  originais (`logo-sem-fundo-fonte-branca/preto.png`) sem uso — os
+  cortes derivados deles (`logo-lockup-white/black.png`) continuam em
+  uso na navbar e em "Planilha vs Pruxor".
+
+- **Rodapé inteiro centralizado no mobile (2026-08-25)** — usuário viu o
+  print do rodapé mobile (logo, nav-links, contact-links alinhados à
+  esquerda; só a faixa de baixo, copyright+legal links, já vinha
+  centralizada por herdar `align-items:center` da regra base) e pediu
+  centralizar tudo. `.footer__top` foi de `align-items: flex-start` pra
+  `center` (+ `text-align: center`), `.footer__contact-links` (os 2
+  links empilhados: e-mail, Instagram) foi de `flex-start` pra `center`
+  também. Validado via Playwright: logo, nav-links, contact-links,
+  copyright e legal-links todos com centro-x batendo com o centro exato
+  da viewport (207px em 414px de largura, sub-pixel de tolerância), sem
+  overflow, desktop confirmado intocado.
+
+- **Logo da navbar e de "Planilha vs Pruxor" aumentadas (2026-08-25)** —
+  usuário achou pequenas. `.nav__logo-img` (as 2 versões, branca/preta)
+  de 28px pra 40px de altura; `.compare__brand-logo` (cabeçalho desktop
+  + divisória mobile) de 24px pra 32px. Validado via Playwright no
+  ponto de maior risco (pílula rolada da navbar, altura reduzida pra
+  60px): logo de 40px cabe com 10px de folga em cima/embaixo,
+  perfeitamente centralizada, sem corte. Sem overflow novo, zero erro
+  de console em nenhuma das 4 larguras/estados testados.
+
+- **Bug real corrigido: globo de "Sobre a Pruxor" com tratamento errado
+  na faixa de tablet, 768-991px (2026-08-25)**. Usuário mandou print no
+  iPad Air (820px) mostrando o globo como círculo inteiro, empurrando
+  badge/heading/parágrafo pra baixo dele — o tratamento "antigo"
+  (`position: relative`, fluxo normal). Causa raiz: quando o globo
+  ganhou o tratamento novo ("metade visível, 40% do card, atrás do
+  conteúdo") numa rodada anterior, a mudança só foi escopada em
+  `≤767px` — mas a regra ANTIGA (círculo inteiro relative) continuava
+  ativa em `≤991px`, cobrindo sozinha a faixa 768-991px (tablet de
+  verdade) sem nunca ter sido atualizada. Corrigido movendo o
+  tratamento novo pro bloco `≤991px` (que já cobre `≤767px` por
+  conter essa faixa), removendo a duplicata que sobrava no bloco
+  `≤767px`. Validado via Playwright em 820/850/900/991px: globo com
+  `position: absolute`, 80% de altura do card (40% visível, atrás do
+  conteúdo) em TODOS — matemática idêntica ao mobile (414px,
+  reconfirmado sem regressão) — e desktop/tweener (1100-1440px)
+  confirmados intocados (continuam com o recorte de 1/4 no canto).
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das
