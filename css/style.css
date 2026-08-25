@@ -899,12 +899,19 @@ body.nav-mobile-open { overflow: hidden; }
 /* align-items: flex-end (não flex-start) de propósito — pedido explícito
    do usuário, com anotação visual: o parágrafo da direita deve alinhar
    pela BASE com o heading da esquerda, não pelo topo dos dois. */
+/* margin-bottom: var(--space-l) (2026-08-25, era --space-m) — pedido
+   explícito do usuário: mais respiro entre o header e o grid
+   (imagem+texto) logo abaixo. (Uma tentativa anterior no mesmo dia
+   também dava um `min-height` extra à caixa da imagem pra evitar
+   sobreposição em larguras estreitas, mas foi desfeita a pedido do
+   usuário — ver comentário em `.feature-showcase__visual-col` abaixo. O
+   pedido real era só esse espaçamento aqui.) */
 .feature-showcase__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   gap: var(--space-xl);
-  margin-bottom: var(--space-m);
+  margin-bottom: var(--space-l);
 }
 /* 36rem (não mais 32rem, 2026-08-22): usuário pediu o heading em só 2
    linhas (estava quebrando em 3 com o max-width antigo). 32rem era largo
@@ -913,8 +920,18 @@ body.nav-mobile-open { overflow: hidden; }
    via Playwright em 1440px/1920px: 36rem é o menor valor que já garante
    2 linhas (557px/570px, bem equilibradas) sem encostar no parágrafo
    (que mantém seu próprio max-width: 32rem, intocado). Testado sem
-   overlap em nenhuma das duas larguras. */
+   overlap em nenhuma das duas larguras [1440/1920] — mas larguras "tweener"
+   entre 992px e 1220px NÃO foram testadas na época: nelas, o header
+   inteiro (heading + parágrafo) não cabe lado a lado nos dois max-width
+   fixos, então os 2 itens flex ENCOLHEM (flex-shrink padrão) abaixo do
+   próprio max-width, e o heading quebra em 3-4 linhas em vez de 2. **`line-height:
+   1.05`** (2026-08-25, era 1.15 herdado de `.section-header__heading`,
+   classe compartilhada com outras sessões — não mexida ali de propósito)
+   aqui, escopado só a esse heading: reduz quanto essa quebra extra
+   engorda a altura do header nas larguras estreitas (pedido explícito do
+   usuário, com print mostrando o espaçamento solto entre linhas). */
 .feature-showcase__header-heading { max-width: 36rem; }
+.feature-showcase__header-heading h2 { line-height: 1.05; }
 .feature-showcase__header-paragraph {
   max-width: 32rem;
   text-align: left;
@@ -943,19 +960,41 @@ body.nav-mobile-open { overflow: hidden; }
 
 /* align-items do grid fica no padrão (stretch) de propósito: como os filhos
    de .feature-showcase__content-col são todos position:absolute (não
-   contribuem para a altura do pai), é o min-height do visual que acaba
+   contribuem para a altura do pai), é o tamanho do visual que acaba
    definindo a altura da linha do grid — e o stretch faz o content-col
    herdar essa altura, dando aos blocos de texto absolutos uma caixa real
-   para preencher. Reduzido de 460px pra 400px junto com esse ajuste, pra
-   sobrar espaço pro header novo sem estourar a viewport em telas mais
-   baixas (~768px de altura, laptop comum). */
-.feature-showcase__visual-col { position: relative; min-height: 400px; }
+   para preencher. **`aspect-ratio: 16 / 9`** (2026-08-25, era
+   `min-height: 400px` fixo) — o min-height era um palpite de quando a
+   sessão ainda usava placeholder sem imagem real; com as telas reais
+   (ver `.feature-showcase__visual-img` abaixo), essa altura arbitrária
+   não batia com a proporção de nenhuma delas e sobrava "letterbox"
+   (faixas vazias em cima/embaixo ou nas laterais, mesmo com
+   `object-fit: contain`). 16:9 bate quase exatamente com 4 das 5 telas
+   reais (Financeiro 1280x720 = 16:9 exato; Orçamentos/Obras/Estoque
+   1672x941 ≈ 16:9, diferença de 0.06%) — a altura do painel passa a
+   seguir a largura da coluna (definida pelo grid) na MESMA proporção da
+   imagem, então ela preenche o painel sem sobra nenhuma. */
+.feature-showcase__visual-col { position: relative; aspect-ratio: 16 / 9; }
+/* Um `min-height` extra (mesmo só numa faixa "tweener" de largura) pra
+   dar mais altura ao texto de alguns módulos foi tentado em 2026-08-25 e
+   DESFEITO no mesmo dia, a pedido explícito do usuário: reintroduzia
+   sobra/letterbox na imagem (visível até nos módulos que não precisavam
+   de altura extra, ex: Estoque, reportado com print) — o usuário deixou
+   claro que a caixa da imagem deve continuar 100% responsiva à proporção
+   real da imagem (`aspect-ratio: 16/9` sozinho, sem floor nenhum) e que
+   o pedido original era só sobre o ESPAÇO ENTRE O HEADER E O GRID (ver
+   `.feature-showcase__header` acima), não sobre o tamanho da imagem. Não
+   reintroduzir um `min-height`/floor de altura aqui sem pedido explícito
+   novo — se o texto de algum módulo precisar de mais espaço numa largura
+   estreita, resolver por outro caminho (ex: encurtar o texto, ou tratar
+   só o texto/CTA, nunca inflando a caixa da imagem). */
 .feature-showcase__visual-panel {
   position: absolute;
   inset: 0;
   overflow: hidden;
   border-radius: var(--radius-l);
   background: var(--bg-subtle);
+  border: 10px solid rgba(0, 0, 0, 0.1);
   opacity: 0;
   transform: scale(0.97);
   transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
@@ -963,11 +1002,22 @@ body.nav-mobile-open { overflow: hidden; }
 .feature-showcase__visual-panel.is-active { opacity: 1; transform: scale(1); }
 /* Telas reais do produto (2026-08-25) — substituem o placeholder de
    texto ("Tela do financeiro" etc.) que existia enquanto não tínhamos os
-   prints. `object-fit: cover` preenche o painel inteiro sem distorcer,
-   cortando o excesso; `overflow: hidden` no painel (adicionado junto)
-   garante que a imagem respeite o `border-radius` do card em vez de
-   vazar pelos cantos arredondados. */
-.feature-showcase__visual-img { width: 100%; height: 100%; display: block; object-fit: cover; }
+   prints. `object-fit: contain` (2026-08-25, era `cover`) mostra a tela
+   inteira sem cortar nenhum canto — `cover` estava recortando conteúdo
+   real das 4 telas com proporção parecida (Financeiro/Orçamentos/Obras/
+   Estoque, ~1280x720/1672x941); o painel tem `background: var(--bg-subtle)`
+   pra preencher a sobra quando a proporção da imagem não bate exatamente
+   com a do painel. `overflow: hidden` no painel garante que a imagem
+   respeite o `border-radius` do card em vez de vazar pelos cantos
+   arredondados. */
+.feature-showcase__visual-img { width: 100%; height: 100%; display: block; object-fit: contain; }
+/* Diário de obra (data-step="2") tem proporção bem mais larga que as
+   outras 4 (1807x870 vs. ~1672x941/1280x720) — sozinha entre as 5, foge
+   bastante do formato comum. Mantém `cover` só nessa (recorta o excesso
+   nas laterais) em vez de puxar o painel inteiro pra um formato mais
+   largo só por causa de 1 imagem — as outras 4 continuam com `contain`,
+   mostrando o conteúdo inteiro no mesmo tamanho de painel de sempre. */
+[data-step="2"] .feature-showcase__visual-img { object-fit: cover; }
 
 .feature-showcase__content-col { position: relative; }
 .feature-showcase__block {
@@ -1026,21 +1076,28 @@ body.nav-mobile-open { overflow: hidden; }
   .feature-showcase__visual-col { display: none; }
   /* Telas reais (2026-08-25, mesma troca do painel de crossfade do
      desktop) — `overflow: hidden` + `.feature-showcase__visual-img`
-     (`object-fit: cover`) preenche a miniatura sem distorcer.
-     `display: block` é OBRIGATÓRIO aqui (bug real, achado na
-     verificação): a regra base de `.feature-showcase__block-visual` é
-     `display: none` (só existe visualmente no mobile) — ao remover o
-     antigo `display: flex` (que centralizava o rótulo de texto,
-     desnecessário agora que a imagem preenche via width/height 100%),
-     o override do `display: none` foi embora junto por descuido,
-     deixando a miniatura invisível (e a imagem nunca carregava, já que
-     um elemento sem caixa de layout não dispara o `loading="lazy"`). */
+     (`object-fit: contain`, cover só no diário de obra) preenche a
+     miniatura sem distorcer. `display: block` é OBRIGATÓRIO aqui (bug
+     real, achado na verificação): a regra base de
+     `.feature-showcase__block-visual` é `display: none` (só existe
+     visualmente no mobile) — ao remover o antigo `display: flex` (que
+     centralizava o rótulo de texto, desnecessário agora que a imagem
+     preenche via width/height 100%), o override do `display: none` foi
+     embora junto por descuido, deixando a miniatura invisível (e a
+     imagem nunca carregava, já que um elemento sem caixa de layout não
+     dispara o `loading="lazy"`). **`aspect-ratio: 16 / 9`** (2026-08-25,
+     era `4 / 3.2` — mesmo motivo/mesma proporção da versão desktop, ver
+     `.feature-showcase__visual-col` acima): a proporção antiga (1.25)
+     era bem mais "quadrada" que as telas reais (~1.78), deixando faixas
+     vazias em cima/embaixo da miniatura mesmo com `object-fit: contain`
+     (bug relatado pelo usuário com print no mobile). */
   .feature-showcase__block-visual {
     display: block;
     overflow: hidden;
-    aspect-ratio: 4 / 3.2;
+    aspect-ratio: 16 / 9;
     border-radius: var(--radius-l);
     background: var(--bg-subtle);
+    border: 10px solid rgba(0, 0, 0, 0.1);
     margin-bottom: var(--space-m);
   }
   .feature-showcase__content-col { display: flex; flex-direction: column; gap: var(--space-2xl); }

@@ -414,9 +414,53 @@ reintroduzir uma imagem ou placeholder ali sem pedido explícito.
     thumbnail por módulo) mostram um `<img class="feature-showcase__visual-img">`
     de verdade agora — primeiras imagens reais do projeto (`assets/Imagens-solucoes/`,
     fora do padrão "site 100% vanilla/SVG sem imagem nenhuma" registrado em
-    "Estrutura", ver bullet ali). `object-fit: cover` preenche o painel/
-    miniatura sem distorcer; `overflow: hidden` no container garante que a
-    imagem respeite o `border-radius`. O antigo placeholder de texto
+    "Estrutura", ver bullet ali). **`object-fit: contain`** (2026-08-25,
+    era `cover` — trocado por pedido explícito do usuário, `cover` estava
+    cortando conteúdo real das telas) mostra a imagem inteira, com o
+    `background: var(--bg-subtle)` do painel/miniatura preenchendo a
+    sobra quando a proporção não bate exatamente. **Exceção: Diário de
+    obra (`data-step="2"`)** — única das 5 telas com proporção bem mais
+    larga (1807x870 vs. ~1672x941/1280x720 das outras) — mantém
+    `object-fit: cover` via `[data-step="2"] .feature-showcase__visual-img`
+    (pedido explícito do usuário: "adote o tamanho das outras" em vez de
+    esticar o painel por causa de 1 imagem, aceitando corte só nela).
+    Painel desktop e miniatura mobile também ganharam `border: 10px solid
+    rgba(0, 0, 0, 0.1)` (preto a 10% de opacidade, bem sutil) nessa mesma
+    rodada — `box-sizing: border-box` (global do projeto) garante que a
+    borda entra pra dentro do `inset: 0`/`aspect-ratio` já existente em
+    vez de aumentar o tamanho do painel. `overflow: hidden` no container
+    garante que a imagem respeite o `border-radius`. **Correção seguinte,
+    mesmo dia**: `contain` sozinho ainda sobrava "letterbox" (faixas
+    vazias `--bg-subtle` em cima/embaixo, mais visível no mobile —
+    usuário reportou com print do módulo "Gestão de obras") porque os
+    CONTAINERS tinham tamanho inventado de antes de existir imagem real
+    (`min-height: 400px` fixo no `.feature-showcase__visual-col` desktop,
+    `aspect-ratio: 4/3.2` no `.feature-showcase__block-visual` mobile).
+    Os dois agora usam **`aspect-ratio: 16 / 9`**, que bate quase exato
+    com 4 das 5 telas reais (Financeiro 1280x720 = 16:9 exato; Orçamentos/
+    Obras/Estoque 1672x941 ≈ 16:9, 0.06% de diferença) — o container
+    segue a proporção real da imagem em vez de um número solto, e a
+    sobra some. Diário de obra continua em `cover` dentro desse mesmo
+    container 16:9 (preenche de ponta a ponta, só recorta um pouco mais
+    das laterais — comportamento já aceito). **`.feature-showcase__visual-col`
+    é só `aspect-ratio: 16/9`, sem nenhum `min-height`/floor** — um
+    floor de altura pra essa faixa "tweener" (992-1220px, onde o texto
+    de alguns módulos como Financeiro/Orçamentos quebra em mais linhas
+    do que a caixa da imagem comporta) foi tentado e DESFEITO no mesmo
+    dia (2026-08-25): o usuário reportou com print que isso trazia de
+    volta sobra/letterbox na imagem (visível até em módulos que não
+    precisavam, ex: Estoque) e deixou explícito que a caixa da imagem
+    deve continuar 100% responsiva à proporção real da imagem, sem
+    floor — o pedido original era só sobre o ESPAÇO ENTRE O HEADER E O
+    GRID (ver bullet do header abaixo), não sobre o tamanho da imagem.
+    **Não reintroduzir um floor de altura aqui sem pedido explícito
+    novo.** Ver `memoria.md` (bullet "Texto do módulo sobrepondo...") pro
+    histórico completo, incluindo o resíduo de overlap conhecido e aceito
+    nas 2 larguras mais estreitas (992/1050px) só nos módulos Financeiro/
+    Orçamentos — e o gotcha "`aspect-ratio` + `min-height` no mesmo item
+    de grid" em "Cuidados importantes" (lição que continua válida mesmo
+    com o revert, caso um floor seja pedido de novo no futuro). O antigo
+    placeholder de texto
     (`.feature-showcase__visual-label`, "Tela do financeiro" etc.) e os
     gradientes de marca variados por `data-step` (só existiam pra
     diferenciar 5 caixas cinzas idênticas) foram removidos — não existem
@@ -491,6 +535,25 @@ reintroduzir uma imagem ou placeholder ali sem pedido explícito.
     sem `max-width` + `flex: 1`, `.feature-showcase__header-heading` com
     `flex: none`, `.feature-showcase__header` com
     `justify-content: flex-start`.
+  - **Mais respiro entre header e grid + heading mais compacto quando
+    quebra em várias linhas (2026-08-25)**: `.feature-showcase__header`
+    `margin-bottom` de `--space-m` pra `--space-l`, e
+    `.feature-showcase__header-heading h2` ganhou `line-height: 1.05`
+    próprio (era 1.15, herdado de `.section-header__heading` — classe
+    compartilhada, não mexida ali). Pedido explícito do usuário, com
+    print: em larguras "tweener" (992-1220px) o heading (max-width fixo
+    36rem) não cabe mais ao lado do parágrafo (max-width 32rem) no espaço
+    disponível, os dois encolhem via flex-shrink, e o heading quebra em
+    3-4 linhas em vez de 2 — essas 2 mudanças deixam esse estado mais
+    compacto/espaçado. **Não elimina 100% um overlap residual** entre o
+    parágrafo do header e o texto de módulo nas 2 larguras mais estreitas
+    da faixa (992/1050px), só nos 2 módulos com texto mais longo
+    (Financeiro, Orçamentos) — resíduo pequeno e conhecido, aceito de
+    propósito porque a correção mais completa (dar mais altura à caixa da
+    imagem nessa faixa) foi tentada e DESFEITA no mesmo dia a pedido do
+    usuário (ver bullet "Telas reais do produto" acima e `memoria.md`
+    pro histórico completo) — o pedido era só sobre esse espaçamento, não
+    sobre o tamanho da imagem.
 - **"Como funciona"** (sessão nova, logo depois de "Soluções") passou por
   **3 layouts diferentes** antes de chegar no atual. 1ª versão: linha do
   tempo horizontal estática (`.how-it-works__timeline`, círculos com
@@ -1011,6 +1074,25 @@ Não há suíte de testes automatizados no repositório.
   `.is-active`, `getComputedStyle().transform`, contagem de
   `data-reveal.is-visible`) em vez de confiar só no valor bruto de
   `window.scrollY` de uma única leitura.
+- **`aspect-ratio` + `min-height` no MESMO item de CSS Grid dentro de
+  colunas `1fr` é uma combinação arriscada** (bug real, 2026-08-25, ver
+  `.feature-showcase__visual-col` em `memoria.md` pro caso completo): um
+  item de grid com `aspect-ratio` reporta um tamanho PREFERIDO de largura
+  calculado a partir da própria altura mínima pro algoritmo de
+  distribuição das colunas `1fr` — se essa largura implícita (altura ×
+  aspect-ratio) for maior que a coluna disponível, ela "vaza" pra fora da
+  própria célula do grid (o item renderiza mais largo que sua coluna,
+  sobrepondo o vizinho, que fica espremido a 0px). `min-width: 0` no item
+  e `grid-template-columns: minmax(0, 1fr) ...` (em vez de `1fr` puro)
+  ajudam mas não resolvem sozinhos. Se precisar de um floor de altura
+  (`min-height`) que às vezes precisa vencer o `aspect-ratio` num item de
+  grid, **resetar `aspect-ratio: auto` no mesmo breakpoint** (não
+  empilhar os dois competindo) — ou aplicar o floor em outro nível
+  (`grid-auto-rows` no grid, não no item). **A lição fica, mas o próprio
+  `min-height` que disparou o bug foi revertido no mesmo dia** — pedido
+  explícito do usuário pra `.feature-showcase__visual-col` continuar só
+  `aspect-ratio: 16/9`, sem floor nenhum (ver bullet "Telas reais do
+  produto" acima).
 
 ## Memória
 

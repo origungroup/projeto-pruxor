@@ -3217,6 +3217,130 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
   reconfirmado sem regressão) — e desktop/tweener (1100-1440px)
   confirmados intocados (continuam com o recorte de 1/4 no canto).
 
+- **Bug real corrigido: telas reais de "Soluções" cortando conteúdo
+  (2026-08-25, mesmo dia)**. `.feature-showcase__visual-img` usava
+  `object-fit: cover` desde que as imagens reais substituíram o
+  placeholder — em 4 das 5 telas (Financeiro, Orçamentos, Obras,
+  Estoque, todas ~1280x720/1672x941) isso recortava conteúdo real da
+  UI (barra lateral, linhas de tabela) pra preencher o painel. Trocado
+  pra `object-fit: contain` na regra base — mostra a tela inteira, com
+  o `background: var(--bg-subtle)` do painel preenchendo a sobra
+  (letterbox) quando a proporção da imagem não bate exatamente com a
+  do painel. **Diário de obra (`data-step="2"`) é a exceção
+  deliberada**: sozinha entre as 5, tem proporção bem mais larga
+  (1807x870, ~2.08:1) que as outras (~1.78:1) — usuário pediu
+  explicitamente pra ela "adotar o tamanho das outras" (não esticar o
+  painel por causa de 1 imagem) e aceitar corte. Seletor
+  `[data-step="2"] .feature-showcase__visual-img { object-fit: cover; }`
+  restaura o comportamento antigo só nela, nos dois lugares que
+  reusam essa classe (painel desktop com crossfade E miniatura mobile
+  — mesmo `data-step` nos dois). Também adicionado, pedido explícito
+  do usuário, `border: 10px solid rgba(0, 0, 0, 0.1)` (preto a 10% de
+  opacidade — bem sutil, não um contorno preto forte) em
+  `.feature-showcase__visual-panel` (painel desktop) e
+  `.feature-showcase__block-visual` (miniatura mobile) — enquadra as 5
+  telas com uma moldura fina, consistente nos dois breakpoints;
+  `box-sizing: border-box` (global do projeto) garante que a borda
+  entra pra dentro da caixa já definida (`inset: 0` / `aspect-ratio`)
+  em vez de estourar o tamanho do painel. Validado via Playwright
+  (forçando `.is-active` em cada `data-step` via JS, sem depender do
+  scroll-crossfade): as 4 telas "contain" mostram o conteúdo inteiro
+  sem cortar nada, Diário de obra preenche o painel de ponta a ponta
+  (cover, sem letterbox), borda visível e sutil nas 5 + nas 2
+  miniaturas mobile testadas (`data-step="1"` e `"2"`).
+
+- **Bug real corrigido: `object-fit: contain` sobrando "letterbox" em
+  cima/embaixo no mobile (2026-08-25, mesmo dia, correção seguinte)**.
+  A troca pra `contain` (bullet acima) resolveu o corte de conteúdo, mas
+  os CONTAINERS (`.feature-showcase__visual-col` no desktop,
+  `.feature-showcase__block-visual` no mobile) continuavam com tamanhos
+  **inventados antes de existir imagem real** — `min-height: 400px` fixo
+  no desktop e `aspect-ratio: 4/3.2` (1.25) no mobile — que não batem
+  com a proporção real das telas (~1.78, quase 16:9). Resultado: faixas
+  vazias visíveis (cor `--bg-subtle` do painel) em cima/embaixo da
+  miniatura mobile — usuário mandou print do módulo "Gestão de obras"
+  mostrando exatamente isso e pediu pra "deixar responsivo com a
+  imagem, tanto desktop quanto mobile". Trocado os dois containers pra
+  `aspect-ratio: 16 / 9` (bate quase exato com 4 das 5 telas reais:
+  Financeiro 1280x720 = 16:9 exato, Orçamentos/Obras/Estoque 1672x941 ≈
+  16:9 com 0.06% de diferença) — a altura do container passa a seguir a
+  proporção real da imagem em vez de um número solto, eliminando a
+  sobra quase por completo nessas 4. Diário de obra (proporção 2.08:1,
+  bem mais larga) continua em `object-fit: cover` (bullet acima) dentro
+  desse mesmo container 16:9 — preenche de ponta a ponta sem sobra
+  nenhuma, só recorta um pouco mais das laterais, comportamento já
+  aceito explicitamente pelo usuário. Validado via Playwright: no
+  desktop, a imagem renderizada preenche o painel até a borda de 10px
+  nos 5 steps (sem gap visível); no mobile, as 5 miniaturas preenchem a
+  caixa igual, sem faixa vazia. Section inteira ("Soluções") continua
+  cabendo numa viewport de 768px de altura sem cortar nada — a troca de
+  `min-height` fixo pra `aspect-ratio` não estourou a viewport.
+
+- **Texto do módulo sobrepondo o parágrafo do header em larguras
+  "tweener" de desktop, 992-1220px (2026-08-25, mesmo dia) — 1ª correção
+  tentada e DESFEITA no mesmo dia, ver "revertido" abaixo**. Efeito
+  colateral direto do `aspect-ratio: 16/9` do bullet acima: nessa faixa
+  de largura, as 2 colunas do grid ficam estreitas (368-472px) o
+  bastante pra o parágrafo de alguns módulos (Financeiro, Orçamentos)
+  quebrar em bem mais linhas, precisando de até ~440px de altura pro
+  conteúdo (heading+parágrafo+CTA) — bem mais que os ~207-266px que o
+  `aspect-ratio` dava nessa faixa. Como o conteúdo do
+  `.feature-showcase__block` é `position:absolute` com
+  `justify-content:center`, o excesso TRANSBORDAVA pra fora da caixa dos
+  2 lados (não só embaixo) — usuário mandou print (viewport ~992px,
+  módulo "Orçamento com a tabela SINAPI") mostrando o heading do módulo
+  colidindo com a última linha do parágrafo do header, bem acima da
+  própria caixa, e pediu pra "colocar a div mais pra baixo" + "diminuir o
+  espaço entre linhas".
+  - **1ª tentativa (revertida)**: além de (1) `line-height: 1.05` no
+    heading do header e (2) `margin-bottom` de `--space-m` pra
+    `--space-l` no header (as duas ficaram, ver "revertido" abaixo), a
+    correção de raiz tentada foi (3) `@media (max-width: 1240px) {
+    .feature-showcase__visual-col { aspect-ratio: auto; min-height:
+    480px; } }` — resetava o aspect-ratio nessa faixa estreita pra dar
+    mais altura ao texto.
+  - **Armadilha real no caminho (lição que continua válida mesmo com o
+    revert)**: a 1ª versão dessa tentativa foi só empilhar `min-height:
+    480px` por cima do `aspect-ratio: 16/9` já existente (sem resetar o
+    aspect-ratio) — isso causou um "grid blowout" pior que o bug
+    original. Um item de CSS Grid com `aspect-ratio` reporta um tamanho
+    PREFERIDO de largura calculado a partir da própria altura mínima
+    (480 × 16/9 ≈ 853px) pro algoritmo das colunas `1fr`, e esse valor
+    vazou pra fora da própria célula — medido via Playwright,
+    `.feature-showcase__visual-col` renderizou com 853px de largura
+    (quase o grid inteiro), SOBREPONDO `.feature-showcase__content-col`
+    (espremida a 0px de largura). **Lição pra próxima vez**:
+    `aspect-ratio` + `min-height` competindo no MESMO elemento dentro de
+    um grid `1fr` é uma combinação arriscada — se precisar de um floor de
+    altura que vença o aspect-ratio, resetar o aspect-ratio junto (não
+    empilhar os dois) ou aplicar o floor em outro nível (ex:
+    `grid-auto-rows` no grid, não no item). Documentado também em
+    "Cuidados importantes" do `CLAUDE.md`.
+  - **Revertido no mesmo dia, pedido explícito do usuário**: o usuário
+    mandou OUTRO print (módulo "Controle de estoque", que nem precisava
+    de altura extra) mostrando a imagem com sobra/letterbox visível e
+    disse que a caixa da imagem "não deve ter esse espaço extra... deve
+    ser responsivo" e que o pedido original "era apenas para essa parte
+    separar mais do header e subheader" — ou seja, o floor de altura
+    NUNCA foi pedido, só o espaçamento. Removida a media query inteira
+    (`aspect-ratio: auto; min-height: 480px`) e os apoios que ela tinha
+    exigido (`min-width: 0` no item, `minmax(0, 1fr)` nas colunas do
+    grid) — `.feature-showcase__visual-col` voltou a ser só
+    `aspect-ratio: 16/9` sozinho, sem floor nenhum, igual ao bullet
+    acima. Ficaram só as 2 mudanças de espaçamento (line-height do
+    heading + margin-bottom do header), que eram o pedido de verdade.
+    **Resultado conhecido e aceito**: com só essas 2 mudanças, o overlap
+    ainda existe, mas bem menor — validado via Playwright, ficou negativo
+    (seguro) em 1150px+ pra qualquer módulo, e só nos 2 módulos mais
+    longos (Financeiro, Orçamentos) nas 2 larguras mais estreitas da
+    faixa: ~1px de sobreposição em 1050px, ~19px (Financeiro) / ~7px
+    (Orçamentos) em 992px (o extremo inferior antes do empilhamento
+    mobile). Não corrigir esse resíduo aumentando a caixa da imagem de
+    novo sem pedido explícito novo — se o usuário quiser fechar esse
+    último resíduo, a via combinada com o pedido dele é mexer só no
+    TEXTO (ex: encurtar o parágrafo desses 2 módulos, ou limitar linhas
+    só nessa faixa), nunca no tamanho da imagem.
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das
