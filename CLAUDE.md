@@ -554,6 +554,58 @@ reintroduzir uma imagem ou placeholder ali sem pedido explícito.
     usuário (ver bullet "Telas reais do produto" acima e `memoria.md`
     pro histórico completo) — o pedido era só sobre esse espaçamento, não
     sobre o tamanho da imagem.
+  - **Texto do módulo top-aligned com a imagem, não mais centralizado
+    (2026-08-26)**: `.feature-showcase__block` (heading do módulo,
+    "Controle financeiro por obra" etc. + parágrafo + CTA) usa
+    `justify-content: flex-start` (era `center`). Pedido explícito do
+    usuário, com print: o texto do módulo ficava vertical-centralizado
+    na altura da imagem — bem mais baixo que `.feature-showcase__header-paragraph`
+    ("Nada de sistema complicado...") ao lado, na linha de cima. Com
+    `flex-start`, o heading do módulo começa no topo da própria caixa
+    (mesma altura do topo da imagem), ficando visualmente no mesmo
+    "nível" do parágrafo do header acima, em vez de flutuar no meio do
+    card. Escopado só ao desktop — no mobile (≤991px),
+    `.feature-showcase__block` vira `position: static` (fluxo normal,
+    empilhado com os outros blocos via `.feature-showcase__content-col`),
+    onde `justify-content` não tem efeito nenhum, então não precisou de
+    ajuste separado nesse breakpoint.
+  - **Correção seguinte, mesmo pedido de alinhamento (2026-08-26)**: o
+    fix acima resolveu o eixo VERTICAL, mas o usuário voltou com um novo
+    print (2 caixas vermelhas + linha ligando as bordas esquerdas)
+    mostrando que o eixo HORIZONTAL continuava desalinhado — a borda
+    esquerda de `.feature-showcase__header-paragraph` não batia com a de
+    `.feature-showcase__content-col`/o heading do módulo, logo abaixo.
+    Causa: `.feature-showcase__header` era `display: flex;
+    justify-content: space-between`, então a borda esquerda do parágrafo
+    era "largura do container − largura própria do parágrafo" (ele fica
+    encostado na borda DIREITA) — um valor sem nenhuma relação com onde a
+    coluna 2 do `.feature-showcase__grid` (`1fr 1fr`) começa de verdade.
+    **`.feature-showcase__header` virou `display: grid;
+    grid-template-columns: 1fr 1fr; align-items: end`** (era
+    `flex`/`space-between`/`flex-end`) — usando o MESMO
+    `grid-template-columns` do grid de baixo, as duas linhas passam a
+    compartilhar a mesma matemática de coluna, e a borda esquerda do
+    parágrafo (já `text-align: left`) cai exatamente em cima da borda
+    esquerda do `.feature-showcase__content-col`, em qualquer largura —
+    confirmado via Playwright, `leftEdgeDiff` (diferença entre as duas
+    bordas) ficou em `0px` exato em 992/1050/1150/1280/1440/1920px.
+    **Efeito colateral bom**: essa troca também FECHOU por completo o
+    resíduo de overlap conhecido (Financeiro/Orçamentos em 992-1050px,
+    documentado no bullet de espaçamento acima) — o overlap virou um
+    `-48px` (gap seguro) constante em TODAS as larguras testadas, em vez
+    do pequeno overlap residual que sobrava antes. **Trade-off aceito**:
+    o parágrafo do header deixou de ficar encostado na borda DIREITA do
+    container (comportamento de uma decisão anterior, 2026-08-22, "está
+    colado na divisão do centro... precisa ir pro final") — o pedido novo
+    (alinhar com a coluna do módulo abaixo) prevalece sobre o antigo
+    (encostar na borda direita); os dois pedidos eram incompatíveis, e o
+    usuário confirmou o novo com 2 rodadas de feedback explícito.
+    `.feature-showcase__header-heading` (coluna 1) não muda de posição —
+    seu `max-width: 36rem` já cabia dentro da coluna 1 tanto no `flex`
+    quanto no `grid`. Mobile (≤991px): a regra `flex-direction: column`
+    virou `grid-template-columns: 1fr` (só isso muda — `flex-direction`
+    não faz nada num `display: grid`, ficaria sem efeito se não fosse
+    atualizada junto).
 - **"Como funciona"** (sessão nova, logo depois de "Soluções") passou por
   **3 layouts diferentes** antes de chegar no atual. 1ª versão: linha do
   tempo horizontal estática (`.how-it-works__timeline`, círculos com
@@ -733,6 +785,42 @@ reintroduzir uma imagem ou placeholder ali sem pedido explícito.
     `[Nome]`/`[Cidade]` como parâmetro pra preencher; nomes/cidades
     brasileiros variados foram inventados pra esse fim, não são clientes
     reais.
+  - **Bug real corrigido: no Safari, a sessão demorava muito pra aparecer
+    e o loop parava no fim de um ciclo em vez de recomeçar (2026-08-26)**.
+    Usuário reportou com prints: só o heading "Quem usa, aprova."
+    renderizava por um bom tempo (cards invisíveis), e quando finalmente
+    apareciam, o carrossel tocava até o fim e travava, sem voltar pro
+    início. Causa: `.testimonials__loop` tinha `data-reveal` (fade
+    genérico de scroll — ver `[data-reveal]` no fim do arquivo), que
+    inclui `filter: blur(6px)` no estado escondido — só que esse MESMO
+    elemento também tem `overflow-x: hidden` + `mask-image` (pro fade nas
+    bordas) e é o ancestral direto de `.testimonials__track`, cujo
+    `animation: infinite` nunca para. `filter` + `mask-image`/
+    `overflow:hidden` + `animation: infinite` num descendente é uma
+    combinação com bug documentado no WebKit/Safari (confirmado via busca
+    — não é só suspeita): Safari renderiza `filter: blur()` via CPU (não
+    GPU, diferente de Chrome/Firefox), e o mix com mask+overflow+infinite
+    é um padrão conhecido de "o loop simplesmente não recomeça depois da
+    1ª volta". **`data-reveal` foi removido de `.testimonials__loop`**
+    (só do loop — `.testimonials__header`, o título "Quem usa, aprova.",
+    continua com o fade normal) — o carrossel em si não usa mais efeito
+    de entrada, pra nunca aplicar `filter: blur()` no elemento que tem o
+    mask + a animação infinita. `.testimonials__track` também ganhou
+    `transform: translateZ(0)` — promove a faixa pra sua própria camada
+    de composição desde o início, mitigação recomendada pra esse padrão
+    de bug (Safari costuma promover/rebaixar camadas dinamicamente em
+    torno de filter/mask, e é nessa troca que o loop trava). **Não
+    reproduzido 1:1** (sem Mac disponível) — validado via Playwright
+    WebKit (mesmo engine do Safari, empacotado sem as camadas
+    proprietárias da Apple): antes do fix, `.testimonials__loop` ficava
+    com `opacity:0` até a 1ª sweep de scroll disparar o reveal (mesmo
+    delay de qualquer `[data-reveal]`); depois do fix, `opacity` é `1`
+    desde o primeiro frame, sem transição nenhuma pra esperar. O loop em
+    si (`getAnimations()`, `currentTime`, wrap de -50% pra 0%) já rodava
+    corretamente nesse engine WebKit específico antes E depois do fix —
+    não deu pra reproduzir o "trava no fim" diretamente aqui, então a
+    correção se apoia no bug documentado (filter+mask+overflow+infinite)
+    em vez de numa reprodução local exata.
 - **`.about-outcomes`** (seção "Sobre", `#sobre` em `index.html` — **logo
   abaixo da hero, primeira seção da página** desde a copy oficial de
   2026-08-22; antes ficava entre Soluções e Integrações) é um card escuro

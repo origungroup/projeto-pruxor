@@ -3341,6 +3341,90 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
     TEXTO (ex: encurtar o parágrafo desses 2 módulos, ou limitar linhas
     só nessa faixa), nunca no tamanho da imagem.
 
+- **Texto do módulo de "Soluções" alinhado com o topo da imagem, não mais
+  centralizado (2026-08-26)**. Usuário mandou print comparando: o
+  heading do módulo ("Controle financeiro por obra" etc.) ficava
+  vertical-centralizado na altura da imagem, visivelmente mais baixo que
+  `.feature-showcase__header-paragraph` ("Nada de sistema complicado...")
+  na linha acima, e pediu pra alinhar os dois. `.feature-showcase__block`
+  trocou `justify-content: center` por `flex-start` — o texto do módulo
+  agora começa no topo da própria caixa (mesma altura do topo da
+  imagem), lendo de forma mais consistente com o parágrafo do header
+  acima. Só afeta desktop — no mobile o bloco já vira `position:static`
+  (fluxo normal), onde `justify-content` não faz diferença.
+  - **Correção seguinte, mesmo dia**: o fix acima resolveu só o eixo
+    vertical — o usuário voltou com OUTRO print (2 caixas vermelhas + 1
+    linha ligando as bordas esquerdas dos 2 blocos) mostrando que o eixo
+    HORIZONTAL continuava desalinhado: a borda esquerda do parágrafo do
+    header não batia com a do texto do módulo/imagem abaixo. Causa:
+    `.feature-showcase__header` era `flex` + `justify-content:
+    space-between`, então a borda esquerda do parágrafo era "largura do
+    container − largura do próprio parágrafo" (ele fica encostado na
+    borda DIREITA) — sem nenhuma relação com onde a coluna 2 do
+    `.feature-showcase__grid` (`1fr 1fr`) começa. Trocado
+    `.feature-showcase__header` pra `display: grid; grid-template-columns:
+    1fr 1fr; align-items: end` — o MESMO `grid-template-columns` do grid
+    de baixo — assim as 2 linhas passam a compartilhar a mesma matemática
+    de coluna, e a borda esquerda do parágrafo cai exatamente em cima da
+    borda esquerda do texto do módulo, em qualquer largura. Validado via
+    Playwright: diferença entre as 2 bordas ficou em `0px` exato em
+    992/1050/1150/1280/1440/1920px. **Bônus**: essa mudança também fechou
+    por completo o resíduo de overlap conhecido (Financeiro/Orçamentos em
+    992-1050px, ver bullet de espaçamento acima) — virou `-48px` (gap
+    seguro) constante em todas as larguras testadas. **Trade-off aceito**:
+    o parágrafo deixou de ficar encostado na borda DIREITA do container
+    (uma decisão de 2026-08-22) — o pedido novo (alinhar com a coluna do
+    módulo) prevalece; os 2 pedidos eram incompatíveis e o usuário
+    confirmou o novo com 2 rodadas de feedback. Mobile (≤991px): a regra
+    que empilhava o header (`flex-direction: column`) virou
+    `grid-template-columns: 1fr`, já que `flex-direction` não tem efeito
+    nenhum num `display: grid`.
+
+- **Bug real corrigido: Depoimentos demorava muito pra aparecer e o loop
+  parava no fim de um ciclo, só no Safari (2026-08-26)**. Usuário mandou
+  3 prints: heading "Quem usa, aprova." sozinho por um bom tempo sem os
+  cards (2ª imagem), cards aparecendo só depois de muito tempo (3ª
+  imagem), e relatou que o loop contínuo não recomeçava ao chegar no
+  fim. Causa raiz: `.testimonials__loop` tinha `data-reveal` (fade
+  genérico de scroll, `opacity:0; transform:translateY(18px);
+  filter:blur(6px)` no estado escondido) — mas esse MESMO elemento
+  também tem `overflow-x:hidden` + `mask-image` (fade nas bordas do
+  carrossel) e é ancestral direto de `.testimonials__track`, cuja
+  animação (`translateX`, 42s, `infinite`) nunca para. `filter` +
+  `mask-image`/`overflow:hidden` + `animation:infinite` num descendente é
+  uma combinação com bug DOCUMENTADO no WebKit/Safari — confirmado via
+  busca na web (não só suspeita): Safari renderiza `filter:blur()` via
+  CPU em vez de GPU (ao contrário de Chrome/Firefox), o que já é lento
+  sozinho, e o mix com mask+overflow+infinite é um padrão relatado de "o
+  loop não recomeça depois da 1ª volta".
+  - **Correção**: `data-reveal` removido de `.testimonials__loop` no
+    `index.html` (só do loop — `.testimonials__header`, o título,
+    continua revelando normalmente) — o carrossel nunca mais recebe
+    `filter:blur()`, já que é ele quem tem o mask+overflow+animação
+    infinita. `.testimonials__track` ganhou `transform: translateZ(0)`
+    (CSS) — promove a faixa pra sua própria camada de composição desde o
+    início, mitigação recomendada pra esse padrão de bug (a troca
+    dinâmica de camada em torno de filter/mask é onde o Safari trava o
+    loop).
+  - **Validação real teve um limite**: sem Mac disponível, não deu pra
+    reproduzir o bug 1:1. Usei Playwright com o engine WebKit (o mesmo
+    motor do Safari, mas empacotado sem as camadas proprietárias da
+    Apple — instalado via `npx playwright install webkit`, ~60MB,
+    baixado só pra essa investigação). Nesse engine específico, o
+    `getAnimations()` do track já mostrava `playState: "running"` e
+    `currentTime` crescendo continuamente através de várias voltas
+    completas (testado ~46s de execução real, atravessando o ponto de
+    wrap de -50% pra 0% do `translateX`) tanto ANTES quanto DEPOIS do
+    fix — ou seja, não consegui reproduzir o "trava no fim" diretamente
+    aqui. O que SIM foi confirmado e corrigido: `.testimonials__loop`
+    ficava com `opacity:0` até a 1ª sweep de scroll disparar o reveal
+    (mesmo delay de qualquer `[data-reveal]` no site) antes do fix; com
+    `opacity:1` desde o primeiro frame, sem transição nenhuma, depois.
+    A correção do "trava no fim" se apoia no bug documentado (busca web)
+    da combinação filter+mask+overflow+infinite, não numa reprodução
+    local exata — vale reconfirmar com o usuário depois que ele testar
+    em Safari de verdade de novo.
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das

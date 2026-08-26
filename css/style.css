@@ -896,9 +896,9 @@ body.nav-mobile-open { overflow: hidden; }
    "título da sessão" de fachada, mas isso desaparecia ao trocar de etapa
    — agora tem um título/intro de verdade, sempre visível, independente
    de qual dos 5 módulos está ativo no momento. */
-/* align-items: flex-end (não flex-start) de propósito — pedido explícito
-   do usuário, com anotação visual: o parágrafo da direita deve alinhar
-   pela BASE com o heading da esquerda, não pelo topo dos dois. */
+/* align-items: end (era flex-end, na versão flex) de propósito — pedido
+   explícito do usuário, com anotação visual: o parágrafo da direita deve
+   alinhar pela BASE com o heading da esquerda, não pelo topo dos dois. */
 /* margin-bottom: var(--space-l) (2026-08-25, era --space-m) — pedido
    explícito do usuário: mais respiro entre o header e o grid
    (imagem+texto) logo abaixo. (Uma tentativa anterior no mesmo dia
@@ -906,10 +906,34 @@ body.nav-mobile-open { overflow: hidden; }
    sobreposição em larguras estreitas, mas foi desfeita a pedido do
    usuário — ver comentário em `.feature-showcase__visual-col` abaixo. O
    pedido real era só esse espaçamento aqui.) */
+/* `display: grid; grid-template-columns: 1fr 1fr` (2026-08-26, era
+   `display: flex; justify-content: space-between`) — pedido explícito do
+   usuário, com print anotado (2 caixas vermelhas + linha ligando as
+   bordas esquerdas): a borda esquerda de `.feature-showcase__header-paragraph`
+   ("Nada de sistema complicado...") e a de `.feature-showcase__content-col`
+   (heading do módulo, "Controle financeiro por obra" etc., na linha de
+   baixo) não batiam. Causa: com `flex` + `space-between`, a borda
+   esquerda do parágrafo era "container_width − largura própria do
+   parágrafo" (ele fica encostado na borda DIREITA, empurrado pelo
+   space-between) — um valor que muda com a largura do próprio texto e
+   não tem nenhuma relação com onde a coluna 2 do grid de baixo (`.feature-showcase__grid`,
+   `1fr 1fr`) começa de verdade. Trocando o header pro MESMO
+   `grid-template-columns: 1fr 1fr` + `gap: var(--space-xl)` do grid de
+   baixo, as 2 linhas passam a compartilhar literalmente a mesma
+   matemática de coluna — a borda esquerda de `.feature-showcase__header-paragraph`
+   (que já é `text-align: left` dentro da própria coluna) cai exatamente
+   em cima da borda esquerda de `.feature-showcase__content-col`, em
+   QUALQUER largura de tela, sem precisar calcular nenhum valor fixo.
+   `justify-content: space-between` saiu (não faz mais sentido em grid
+   com colunas `1fr`, que já preenchem 100% da largura sozinhas). O
+   parágrafo deixou de ficar encostado na borda DIREITA do container
+   (comportamento antigo, pedido numa rodada anterior) — troca aceita de
+   propósito: o pedido novo (alinhar com a coluna do módulo abaixo)
+   prevalece sobre o antigo (encostar na borda direita). */
 .feature-showcase__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
   gap: var(--space-xl);
   margin-bottom: var(--space-l);
 }
@@ -1020,12 +1044,20 @@ body.nav-mobile-open { overflow: hidden; }
 [data-step="2"] .feature-showcase__visual-img { object-fit: cover; }
 
 .feature-showcase__content-col { position: relative; }
+/* justify-content: flex-start (2026-08-26, era center) — pedido explícito
+   do usuário, com print: o texto do módulo (heading "Controle financeiro
+   por obra" etc.) ficava centralizado na altura da imagem, bem mais
+   baixo que o parágrafo do header ("Nada de sistema complicado...") ao
+   lado. Alinhando o topo do texto do módulo com o topo da imagem (em vez
+   de centralizar), ele fica no mesmo "nível" visual do parágrafo do
+   header acima, dando uma leitura mais consistente entre as duas linhas
+   de texto da sessão. */
 .feature-showcase__block {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
@@ -1069,8 +1101,12 @@ body.nav-mobile-open { overflow: hidden; }
   .feature-showcase__stage { position: static; min-height: 0; display: block; padding: 0; }
   /* header horizontal (heading|parágrafo nos extremos) só faz sentido com
      largura de desktop — empilha normal no mobile, mesmo padrão dos
-     outros headers de sessão. */
-  .feature-showcase__header { flex-direction: column; align-items: stretch; gap: var(--space-sm); margin-bottom: var(--space-l); }
+     outros headers de sessão. `grid-template-columns: 1fr` (não mais
+     `flex-direction: column`, que não faz nada num `display: grid`
+     desde que o header virou grid pra alinhar com `.feature-showcase__grid`,
+     ver comentário na regra base) — 1 coluna só, heading e parágrafo
+     empilham em fluxo normal. */
+  .feature-showcase__header { grid-template-columns: 1fr; align-items: stretch; gap: var(--space-sm); margin-bottom: var(--space-l); }
   .feature-showcase__header-paragraph { max-width: none; }
   .feature-showcase__grid { grid-template-columns: 1fr; }
   .feature-showcase__visual-col { display: none; }
@@ -1130,11 +1166,10 @@ body.nav-mobile-open { overflow: hidden; }
   .feature-set__heading-break { display: inline; }
   .feature-showcase__header { text-align: center; }
   /* `.feature-showcase__header-paragraph` tem `text-align: left` explícito
-     na regra base (desktop, layout space-between com o parágrafo à
-     direita) — texto explícito no próprio elemento sempre vence herança,
-     então o `text-align: center` do pai acima não bastava sozinho pra
-     centralizar esse parágrafo especificamente (bug real, achado na
-     verificação). */
+     na regra base (desktop, 2ª coluna do grid do header) — texto
+     explícito no próprio elemento sempre vence herança, então o
+     `text-align: center` do pai acima não bastava sozinho pra centralizar
+     esse parágrafo especificamente (bug real, achado na verificação). */
   .feature-showcase__header-paragraph { text-align: center; }
 }
 
@@ -1516,11 +1551,37 @@ body.nav-mobile-open { overflow: hidden; }
   -webkit-mask-image: linear-gradient(90deg, transparent 0, black 64px, black calc(100% - 64px), transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, black 64px, black calc(100% - 64px), transparent 100%);
 }
+/* Bug real corrigido (2026-08-26): no Safari, essa sessão demorava muito
+   pra aparecer (usuário reportou com print — só o heading "Quem usa,
+   aprova." renderizava por um bom tempo, os cards ficavam invisíveis) e,
+   quando finalmente aparecia, o loop não continuava — parava assim que
+   chegava no fim de um ciclo em vez de voltar pro início. Causa: até
+   aqui, `.testimonials__loop` também tinha `data-reveal` (fade genérico
+   de scroll, ver [data-reveal] no fim do arquivo), que inclui
+   `filter: blur(6px)` no estado "escondido" — só que ESSE elemento
+   também é quem tem `overflow-x: hidden` + `mask-image` (2 linhas acima)
+   E contém `.testimonials__track`, cuja animação `infinite` nunca para.
+   `filter` + `mask-image`/`overflow:hidden` + animação `infinite` num
+   descendente é uma combinação com bug documentado no WebKit/Safari:
+   o Safari renderiza `filter: blur()` via CPU (não GPU, diferente de
+   Chrome/Firefox) — sozinho já é lento, e some com `mask-image` +
+   `overflow:hidden` num ancestral de um `animation: infinite` é um
+   padrão conhecido de o loop simplesmente não recomeçar depois da 1ª
+   volta. `data-reveal` foi REMOVIDO de `.testimonials__loop` no HTML
+   (`index.html`) — o `.testimonials__header` (título "Quem usa,
+   aprova.") continua com o fade normal, só o carrossel em si não usa
+   mais esse efeito de entrada, pra nunca aplicar `filter: blur()` no
+   elemento que tem o mask + a animação infinita. */
 .testimonials__track {
   display: flex;
   gap: var(--space-sm);
   width: max-content;
   animation: testimonials-scroll 42s linear infinite;
+  /* Promove a faixa pra sua própria camada de composição desde o
+     início (Safari costuma promover/rebaixar camadas dinamicamente em
+     torno de filter/mask, e é exatamente nessa troca que o bug do loop
+     trava) — mitigação recomendada pra esse padrão de bug no Safari. */
+  transform: translateZ(0);
 }
 /* pausa no hover — texto de depoimento é mais longo que um rótulo de
    badge, então dar tempo de terminar de ler antes de continuar o loop é
