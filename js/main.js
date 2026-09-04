@@ -203,6 +203,10 @@ function initBillingToggle() {
           const value = period === 'annual' ? el.dataset.annual : el.dataset.monthly;
           if (value !== undefined) el.textContent = value;
         });
+        document.querySelectorAll('[data-monthly-href]').forEach((el) => {
+          const href = period === 'annual' ? el.dataset.annualHref : el.dataset.monthlyHref;
+          if (href !== undefined) el.href = href;
+        });
         document.querySelectorAll('.pricing-card').forEach((card) => {
           card.classList.toggle('is-annual', period === 'annual');
         });

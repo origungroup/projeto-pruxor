@@ -3425,6 +3425,53 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
     local exata — vale reconfirmar com o usuário depois que ele testar
     em Safari de verdade de novo.
 
+- **Conjunto completo de links de checkout Greenn aplicado aos 4 cards de
+  "Planos" (2026-08-26)**. Diferente do "MAPA DE LINKS" de 2026-08-22
+  (só 3 links mensais, guardados sem aplicar por pedido explícito do
+  usuário na época — "não mexer nos cards ainda"), essa rodada trouxe os
+  8 links (Starter/Light/Pro/Elite × mensal/anual) já como pedido direto
+  de aplicação.
+  - **Pruxor Duo virou Pruxor Light** (só o nome).
+  - **Preços**: Light mensal 149→147; Pro mensal 297→247. Starter e o
+    anual do Light já batiam com o que o usuário confirmou (não mudaram).
+    Elite não mudou.
+  - **Botão do card agora troca de link junto com o toggle mensal/anual**
+    — antes só o preço trocava (via `data-monthly`/`data-annual`); o
+    `href` do CTA era fixo. `initBillingToggle` (`js/main.js`) ganhou um
+    2º loop lendo `data-monthly-href`/`data-annual-href` (atributos
+    novos, pra não colidir com os do preço) e trocando `.href`. Cada
+    `pricing-card__cta` ganhou os 2 atributos com os 2 links do plano.
+  - **Pendência sinalizada, não resolvida sozinho**: os textos estáticos
+    de parcelamento/economia do Light e do Pro (`.pricing-card__installment`/
+    `__savings`) ainda refletem os preços mensais ANTIGOS — não
+    recalculei porque não tenho a fórmula de juros real do checkout
+    Greenn (confirmado: Starter anual R$947 ÷ 3 ≠ R$337,31, tem taxa
+    embutida). Avisei o usuário em vez de inventar um valor.
+  - **Elite usa o mesmo link pra mensal e anual** — veio assim da lista
+    do usuário (os outros 3 planos têm 2 links distintos cada). Aplicado
+    como veio, sinalizado pra reconfirmação (pode ser proposital ou
+    copy-paste do usuário).
+  - Validado via Playwright, clicando no toggle de verdade (não só via
+    classe/JS): os 8 links, preços e textos batem exatamente com o
+    pedido em mensal e em anual, ida e volta. Zero erro de console.
+
+- **Rodada de ajustes de copy/link (2026-08-26, mesmo dia)**. Resolveu a
+  pendência do link anual do Elite (era igual ao mensal — usuário
+  confirmou, depois de eu perguntar já que "pruxor anual" sozinho era
+  ambíguo entre os 4 planos, que devia virar
+  `https://payfast.greenn.com.br/864jakw`). Também: botão dos 4 cards de
+  plano virou "Assinar agora" (era "Começar teste grátis"); botão
+  "Solicitar demonstração" REMOVIDO do nav (desktop + mobile, sobrou só
+  "Entrar" — o WhatsApp continua existindo só no CTA final); e copy de
+  CTA padronizada pra "Criar minha conta grátis" em 4 pontos (hero,
+  "Sobre a Pruxor", as 5 CTAs de módulo em "Soluções", CTA final) — o CTA
+  de "Como funciona" tinha o mesmo texto antigo e por isso um
+  `replace_all` pegou ele por engano numa 1ª passada; revertido na hora
+  porque não estava na lista pedida na época. **Usuário pediu esse
+  também logo em seguida, mesmo dia** — trocado pra "Criar minha conta
+  grátis" também. Com isso, todo CTA "teste grátis"/"demonstração" do
+  site usa o mesmo texto, nenhum ficou de fora.
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das

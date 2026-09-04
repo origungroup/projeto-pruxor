@@ -1004,31 +1004,116 @@ reintroduzir uma imagem ou placeholder ali sem pedido explícito.
   - **`.footer__social` foi removida do CSS e do HTML nas 4 páginas** —
     confirmado sem uso via grep antes de apagar.
   - **Sem WhatsApp no rodapé, de propósito** (pedido explícito do
-    usuário). O WhatsApp aparece em 3 pontos do site: o CTA final
+    usuário). O WhatsApp aparecia em 3 pontos do site: o CTA final
     (`.full-width-feature__secondary-cta`, ver bullet acima) e os 2
     botões "Solicitar demonstração" do nav (desktop + mobile,
     `.nav__actions`/`.nav__actions--mobile`) — adicionado depois, 2026-08-22,
     pedido explícito ("deve ter o mesmo link do botão falar no
-    whatsapp"); antes eram `href="#"`. Mesmo número/mensagem
-    pré-preenchida dos três, `target="_blank" rel="noopener"`.
+    whatsapp"); antes eram `href="#"`. **Os 2 botões "Solicitar
+    demonstração" do nav foram REMOVIDOS por completo em 2026-08-26**
+    (pedido explícito do usuário) — não existem mais no `index.html`;
+    `.nav__actions`/`.nav__actions--mobile` agora têm só o botão
+    "Entrar". O WhatsApp continua existindo só no CTA final
+    (`.full-width-feature__secondary-cta`), único ponto restante.
 - **"MAPA DE LINKS" do usuário (2026-08-22)** — resolveu o WhatsApp do CTA
-  final (ver bullet acima) e trouxe os links reais de checkout Greenn para
-  os planos Starter/Pro/Elite **mensais**; Duo (mensal e anual) e os 3
-  planos no anual ainda não têm checkout pronto ("a criar"/"a coletar",
-  nas palavras do usuário). Também aproveitei pra apontar os 2 botões
-  "Entrar" (nav desktop + mobile) pra `https://www.pruxor.com/login` nas
-  4 páginas — não estava no mapa explicitamente, mas é literalmente a
-  mesma URL de login/teste já usada em todo CTA do site, então tratado
-  como o mesmo tipo de correção. **Os 4 cards de plano NÃO foram tocados
-  ainda** — perguntei ao usuário se o link do Greenn deveria substituir o
-  CTA "Começar teste grátis" por plano (viraria uma ação de
-  assinar-agora) e ele optou explicitamente por "não mexer nos cards
-  ainda", guardando os links Greenn só como referência até ele decidir
-  como/quando aplicar (possivelmente esperando o conjunto ficar completo:
-  Duo + os 3 anuais). **Não presumir que os 3 links mensais (Starter/Pro/
-  Elite) devem ser aplicados aos `pricing-card__cta` sem confirmação nova
-  do usuário** — a decisão de deixar como está foi explícita, não uma
-  omissão.
+  final (ver bullet acima). Também aproveitei pra apontar os 2 botões
+  "Entrar" (nav desktop + mobile) pra `https://www.pruxor.com/login` —
+  não estava no mapa explicitamente, mas é literalmente a mesma URL de
+  login/teste já usada em todo CTA do site, então tratado como o mesmo
+  tipo de correção. Na época, os links de checkout Greenn cobriam só
+  Starter/Pro/Elite mensais, e o usuário pediu explicitamente pra NÃO
+  aplicar ainda aos cards (esperando o conjunto ficar completo). **Esse
+  conjunto completo chegou e foi aplicado em 2026-08-26** — ver bullet
+  "Conjunto completo de links Greenn aplicado aos cards" logo abaixo.
+- **Conjunto completo de links Greenn aplicado aos 4 cards de plano,
+  mensal E anual (2026-08-26)**. Usuário trouxe a lista completa (8
+  links: Starter/Light/Pro/Elite × mensal/anual) e pediu pra aplicar cada
+  um ao botão correspondente — diferente do "MAPA DE LINKS" anterior
+  (só 3 links mensais, guardados sem aplicar por decisão explícita), essa
+  rodada já veio como pedido direto de aplicação, sem precisar perguntar
+  de novo.
+  - **Botão do CTA agora troca de link junto com o toggle mensal/anual**
+    — antes só o preço (`.pricing-card__amount`/`__period`) trocava via
+    `data-monthly`/`data-annual` (texto); o `href` do botão era sempre o
+    mesmo. Com 2 links por plano agora existindo de verdade, o botão
+    precisava trocar junto. `initBillingToggle` (`js/main.js`) ganhou um
+    2º loop, paralelo ao de texto, procurando `[data-monthly-href]` e
+    setando `.href` (não `.textContent`) com `dataset.monthlyHref`/
+    `dataset.annualHref` — atributos NOVOS, escolhidos de propósito pra
+    não colidir com `data-monthly`/`data-annual` já usados nos preços
+    (reusar o mesmo atributo faria o loop de texto tentar escrever a URL
+    como `textContent` do link, quebrando o rótulo "Começar teste
+    grátis"). Cada `<a class="pricing-card__cta">` ganhou
+    `data-monthly-href`/`data-annual-href` com os 2 links do plano, e o
+    `href` inicial (antes do 1º toggle) é o link mensal — mesmo padrão do
+    preço, que também mostra o valor mensal por padrão.
+  - **Pruxor Duo renomeado pra Pruxor Light** (só o nome — descrição,
+    features e posição no grid continuam os mesmos).
+  - **Preços atualizados** (valores exatos do usuário, não recalculados
+    por mim): Light mensal 149→147; Pro mensal 297→247. Starter
+    (mensal 97, anual 947) e o anual de Light (1.447) já batiam com o
+    que já estava no site — o usuário só confirmou, não mudou. Elite não
+    mudou (mensal 697, anual 7.247) — não foi mencionado.
+  - **`ou 3x de R$X no cartão` do Light atualizado** (era um texto
+    genérico "ou 3x no cartão (valor conforme checkout)", placeholder de
+    quando não havia valor real) pra `ou 3x de R$515,40 no cartão`, valor
+    real passado pelo usuário.
+  - **Pendência real, não resolvida por mim de propósito**: com Light
+    mensal caindo pra R$147 e Pro mensal pra R$247, os textos estáticos
+    `.pricing-card__savings` ("Economize R$341 no ano" no Light,
+    "Economize R$617 no ano" no Pro) e o `.pricing-card__installment` do
+    Pro ("ou 3x de R$1.049,68 no cartão") ficaram calculados em cima dos
+    preços mensais ANTIGOS (149 e 297) — não recalculei esses valores
+    porque não tenho a fórmula real usada pelo checkout Greenn pra juros
+    de parcelamento (confirmado comparando Starter: anual R$947 ÷ 3 =
+    R$315,67, mas o valor real de parcela é R$337,31 — tem uma taxa
+    embutida que não é só dividir por 3). Flaguei isso pro usuário no
+    fim da resposta em vez de inventar um valor — se ele quiser esses
+    textos exatos, precisa vir do checkout/gateway, não de mim.
+  - **Elite usa o MESMO link pra mensal e anual** (`fj9rqsj`) — foi
+    exatamente o que o usuário mandou (as 2 linhas da lista tinham a
+    mesma URL), diferente dos outros 3 planos (cada um com 2 links
+    distintos). Aplicado como veio, mas sinalizado como algo a
+    reconfirmar — pode ser proposital (checkout do Elite decide o ciclo
+    dentro da própria página da Greenn) ou copy-paste. Não presumir que é
+    erro e "consertar" sozinho sem o usuário confirmar.
+  - Validado via Playwright: leitura de nome/preço/parcelamento/economia/
+    `href` dos 4 cards em mensal e depois em anual (clicando no toggle de
+    verdade, não simulando classe via JS) — todos os 8 links batem
+    exatamente com a lista do usuário, preços/textos batem com o
+    pedido, e voltar pra mensal restaura tudo certinho. Zero erro de
+    console.
+- **Rodada de ajustes de copy/link, mesmo dia (2026-08-26)**:
+  - **Link anual do Elite corrigido**: era o mesmo link do mensal
+    (`fj9rqsj`, sinalizado como pendência no bullet acima) — usuário
+    confirmou (via pergunta direta, já que "pruxor anual" sozinho era
+    ambíguo entre os 4 planos) que o `data-annual-href` do Elite devia
+    virar `https://payfast.greenn.com.br/864jakw`. Resolve a
+    inconsistência antiga.
+  - **Botão dos 4 cards de plano**: "Começar teste grátis" →
+    **"Assinar agora"** (pedido explícito, reflete que o clique já leva
+    direto ao checkout Greenn, não a um teste).
+  - **Botão "Solicitar demonstração" REMOVIDO do nav** (desktop
+    `.nav__actions` + mobile `.nav__actions--mobile`) — pedido explícito
+    do usuário. Sobrou só "Entrar" nos dois; sem gap/espaço vazio onde o
+    botão estava (confirmado via screenshot, `.nav__actions` é flex e se
+    ajusta sozinho a 1 filho).
+  - **Copy de CTA padronizada pra "Criar minha conta grátis"** em 4
+    pontos, pedido explícito por sessão: hero (`.hero__cta`, era
+    "Começar meu teste grátis"), "Sobre a Pruxor"
+    (`.about-outcomes__cta`, mesmo texto antigo), as 5 CTAs de módulo em
+    "Soluções" (`.feature-showcase__block .btn--primary`, era "Testar
+    tudo isso grátis por 15 dias") e o CTA final em `.full-width-feature`
+    (era "Começar meu teste grátis agora"). **`.how-it-works__cta`
+    ("Como funciona") ficou de fora dessa rodada** (tinha o mesmo texto
+    antigo, "Testar tudo isso grátis por 15 dias", e por isso um
+    `replace_all` inicial pegou ele também por engano; revertido de
+    volta na hora, já que essa sessão não estava na lista pedida na
+    época) — **mas o usuário pediu em seguida, mesmo dia, e o texto foi
+    trocado também**. Com isso, TODOS os CTAs "teste grátis"/"demonstração"
+    do site (hero, Sobre, os 5 de Soluções, Como funciona, CTA final)
+    usam o mesmo texto "Criar minha conta grátis" — nenhum ficou de
+    fora.
 
 ## Comandos
 
