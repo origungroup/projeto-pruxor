@@ -3472,6 +3472,19 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
   grátis" também. Com isso, todo CTA "teste grátis"/"demonstração" do
   site usa o mesmo texto, nenhum ficou de fora.
 
+- **Google Tag Manager + verificação de domínio do Facebook adicionados
+  (2026-08-26)**. Usuário mandou o snippet oficial do GTM
+  (container `GTM-WBF2Z5H3`) pra colar no `<head>` (script) e logo no
+  início do `<body>` (`<noscript>` com iframe) — instalação padrão do
+  Google, sem nenhuma customização. Junto, uma tag
+  `<meta name="facebook-domain-verification">` (só verificação de
+  domínio do Facebook Business Manager, não carrega script nenhum) no
+  mesmo `<head>`, perto do bloco do GTM. Nenhuma configuração de
+  tags/eventos foi feita no código — isso fica todo dentro do painel do
+  GTM, fora do repositório. Validado via Playwright: script no `<head>`,
+  `window.dataLayer` inicializado, meta tag do Facebook presente,
+  `<noscript>` logo no início do `<body>`, zero erro de página.
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das

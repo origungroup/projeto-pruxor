@@ -40,6 +40,17 @@ README.md       → detalhes técnicos mais extensos (licenças, decisões)
 Não criar novas páginas/rotas sem pedido explícito do usuário — o site é
 página única de propósito.
 
+**Analytics/tracking (desde 2026-08-26)**: Google Tag Manager
+(`GTM-WBF2Z5H3`) — script no topo do `<head>` (logo depois do
+`<meta charset>`) + `<noscript>` com iframe logo no início do `<body>`,
+padrão oficial de instalação do GTM (colar "o mais alto possível" nos
+dois). Também tem uma tag `<meta name="facebook-domain-verification">`
+no `<head>`, junto do bloco do GTM — só verificação de domínio do
+Facebook Business, não carrega nenhum script. Nenhum dos dois tem
+qualquer configuração de tags/eventos feita no próprio `index.html` —
+isso é gerenciado inteiramente dentro do painel do GTM (fora do
+repositório); o site só carrega o container.
+
 Todo ícone de dentro das seções continua sendo SVG inline no HTML (não
 mudou). **Existe uma pasta `assets/` desde 2026-08-25** —
 `assets/Imagens-solucoes/` guarda as 5 telas reais do produto usadas na
