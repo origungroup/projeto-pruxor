@@ -3485,6 +3485,19 @@ tinham copy oficial equivalente, a pedido explícito do usuário (ver
   `window.dataLayer` inicializado, meta tag do Facebook presente,
   `<noscript>` logo no início do `<body>`, zero erro de página.
 
+- **Número de WhatsApp do link trocado (2026-10-13)**. Era
+  `5521966616597`; usuário passou o novo número já no formato DDD+fone
+  (`21988283637`, sem o prefixo de país) e pediu pra manter o prefixo
+  "55" como estava. Novo número completo: `5521988283637`. Único lugar
+  no site que usa esse link é `.full-width-feature__secondary-cta`
+  ("Ainda com dúvida? Fala com a gente no WhatsApp", CTA final) — os 2
+  botões "Solicitar demonstração" do nav que também usavam esse número
+  foram removidos antes (ver bullet de 2026-08-26 acima), então não
+  sobrou nenhuma outra ocorrência pra atualizar. Mensagem pré-preenchida
+  (`text=...`) não mudou, só o número. **Menções ao número antigo em
+  entradas anteriores deste arquivo (datadas de 2026-08-22) são
+  histórico — refletem o número de quando foram escritas, não o atual.**
+
 ## Contexto para a próxima sessão
 
 **Atualizada em 2026-08-22 (mesmo dia da remoção do banner + exclusão das
